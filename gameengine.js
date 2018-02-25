@@ -57,19 +57,21 @@ function startStuff() {
       this.bombArray = []
     },
     newBomb: function (angle) {
-      this.bombArray.push({
-        x: 320, y: 480,
-        vx: Math.sin(angle * rConv), vy: 1,
-        sprite: draw.circle(5).fill("green")
-      })
+      if (this.bombArray.length < 7) {
+        this.bombArray.push({
+          x: 320, y: 480,
+          vx: 3 * Math.sin(angle * rConv), vy: 3,
+          sprite: draw.circle(5).fill("green")
+        })
+      }
     },
     update: function () {
       this.bombArray.forEach((bomb, i) => {
         bomb.x += bomb.vx
         bomb.y = Math.max(-10, bomb.y - bomb.vy)
         bomb.sprite.center(bomb.x, bomb.y)
-        planes.checkPlane(bomb.x,bomb.y)
-        if (bomb.y == -10) delete this.bombArray[i]
+        planes.checkPlane(bomb.x, bomb.y)
+        if (bomb.y == -10) this.bombArray.splice(i, 1)
       })
     }
   }
@@ -95,12 +97,14 @@ function startStuff() {
         this.planesArray[i].sprite.center(this.planesArray[i].x, this.planesArray[i].y)
       })
     },
-    checkPlane:function(x,y){
-      this.planesArray.forEach((plane,i)=>{
-        if (plane.sprite.inside(x,y)){
-          debugMsg("hit "+plane.sprite.id())
+    checkPlane: function (x, y) {
+      this.planesArray.forEach((plane, i) => {
+        if (plane.sprite.inside(x, y)) {
+          debugMsg("hit " + plane.sprite.id())
           plane.sprite.remove()
-          delete this.planesArray[i]
+          this.planesArray.splice(i, 1)
+          boomAt(x, y)
+          if (this.planesArray.length == 0) debugMsg("You Win!")
         }
       })
     }
@@ -156,35 +160,11 @@ function startStuff() {
   SVG.on(document, 'keyup', function (e) { e.preventDefault() })
   draw.on('click', (e) => debugMsg(e.clientX + "," + e.clientY + ":" + e.target.id))
 
-  function reset() {
-    // visualize boom
-    boom()
-
-    // reset speed values
-    vx = 0
-    vy = 0
-
-    // position the ball back in the middle
-    ball.animate(100).center(width / 2, height / 2)
-
-    // reset the position of the paddles
-    paddleLeft.animate(100).cy(height / 2)
-    paddleRight.animate(100).cy(height / 2)
-  }
-
-
   // show visual explosion 
-  function boom() {
-    // detect winning player
-    var paddle = ball.cx() > width / 2 ? paddleLeft : paddleRight
-    // create the gradient
-    var gradient = draw.gradient('radial', function (stop) {
-      stop.at(0, paddle.attr('fill'), 1)
-      stop.at(1, paddle.attr('fill'), 0)
-    })
+  function boomAt(x, y) {
     // create circle to carry the gradient
-    var blast = draw.circle(300)
-    blast.center(ball.cx(), ball.cy()).fill(gradient)
+    var blast = draw.circle(555)
+    blast.center(x, y).fill("green")
     // animate to invisibility
     blast.animate(1000, '>').opacity(0).after(function () { blast.remove() })
   }
