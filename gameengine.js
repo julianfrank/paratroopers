@@ -58,30 +58,51 @@ function startStuff() {
     },
     newBomb: function (angle) {
       this.bombArray.push({
-        x: 320,
-        y: 480,
-        vx: Math.sin(angle * rConv),
-        vy: 1,
+        x: 320, y: 480,
+        vx: Math.sin(angle * rConv), vy: 1,
         sprite: draw.circle(5).fill("green")
       })
     },
     update: function () {
-      this.bombArray.forEach((bomb,i) => {
+      this.bombArray.forEach((bomb, i) => {
         bomb.x += bomb.vx
         bomb.y = Math.max(-10, bomb.y - bomb.vy)
         bomb.sprite.center(bomb.x, bomb.y)
         console.log(bomb)
-        if (bomb.y== -10)delete this.bombArray[i]
+        if (bomb.y == -10) delete this.bombArray[i]
       })
     }
   }
   bombs.init()
 
+  var planes = {
+    planesArray: [],
+    init: function () { for (let i = 0; i < 4; i++) { this.newPlane() } },
+    newPlane: function () {
+      this.planesArray.push({
+        x: -Math.round(Math.random() * 1000), y: Math.round(Math.random() * 200), vx: Math.round(Math.random() * 7) + 1,
+        sprite: draw.path("M -100 -100 h 40 l 5 5 l -15 5 h -33 l -10 -20 h 5 0 z").fill("green")
+      })
+    },
+    update: function () {
+      this.planesArray.forEach((plane, i) => {
+        this.planesArray[i].x += this.planesArray[i].vx
+        if (this.planesArray[i].x > 650) {
+          this.planesArray[i].x = -Math.round(Math.random() * 1000)
+          this.planesArray[i].y = Math.round(Math.random() * 200)
+          this.planesArray[i].vx = Math.round(Math.random() * 7) + 1
+        }
+        this.planesArray[i].sprite.center(this.planesArray[i].x, this.planesArray[i].y)
+      })
+    }
+  }
+  planes.init()
+
   // update is called on every animation step
   function update(dt) {
+    planes.update()
     bombs.update()
   }
-
   var lastTime, animFrame
   function callback(ms) {    // we get passed a timestamp in milliseconds we use it to determine how much time has passed since the last call
     if (lastTime) {
