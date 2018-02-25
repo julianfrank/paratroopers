@@ -68,7 +68,7 @@ function startStuff() {
         bomb.x += bomb.vx
         bomb.y = Math.max(-10, bomb.y - bomb.vy)
         bomb.sprite.center(bomb.x, bomb.y)
-        console.log(bomb)
+        planes.checkPlane(bomb.x,bomb.y)
         if (bomb.y == -10) delete this.bombArray[i]
       })
     }
@@ -93,6 +93,15 @@ function startStuff() {
           this.planesArray[i].vx = Math.round(Math.random() * 7) + 1
         }
         this.planesArray[i].sprite.center(this.planesArray[i].x, this.planesArray[i].y)
+      })
+    },
+    checkPlane:function(x,y){
+      this.planesArray.forEach((plane,i)=>{
+        if (plane.sprite.inside(x,y)){
+          debugMsg("hit "+plane.sprite.id())
+          plane.sprite.remove()
+          delete this.planesArray[i]
+        }
       })
     }
   }
