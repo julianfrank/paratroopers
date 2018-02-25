@@ -21,33 +21,47 @@ function startStuff() {
   // create SVG document and set its size
   var draw = SVG('gamescreen').size(width, height)
   draw.viewbox(0, 0, 640, 480)
-
-
   // draw background
   var background = draw.rect(width, height).fill('black')
+  console.log(background.id())
+  //debugBoard
+  var debugBoard = draw.text("")
+    .font({ size: 16, family: 'Menlo, sans-serif', anchor: 'middle', fill: '#888' })
+    .move(width / 2, height / 3)
+  function debugMsg(msg) { return debugBoard.text(msg + "\n" + debugBoard.text()) }
+  debugMsg("testing")
 
-  // draw line
-  //var line = draw.line(width / 2, 0, width / 2, height)
-  //line.stroke({ width: 5, color: 'green', dasharray: '5,5' })
-  // define paddle width and height
-  //var paddleWidth = 15, paddleHeight = 80
-  // create and position left paddle
-  //var paddleLeft = draw.rect(paddleWidth, paddleHeight)
-  //paddleLeft.x(0).cy(height / 2).fill('#00ff99')
+  var turret = {
+    me:null,
+    angle:0,
+    init:function(){
+      this.me=draw.line(320, 480, 320, 450)
+      this.me.stroke({ width: 5, color: "green" })
+      console.log(this.angle)
+      this.update()
+    }    ,
+    left:function(){
+      this.angle=Math.max(-45,this.angle-1)
+      this.update()
+    },
+    right:function(){
+      this.angle=Math.min(45,this.angle+1)
+      this.update()
+    },
+    update:function(){
+      this.me.rotate(this.angle, 320, 480)
+    }
+  }
+  turret.init()
+  
+  
+
   // define ball size
   //var ballSize = 10
   // create ball
   //var ball = draw.circle(ballSize)
   //ball.center(width / 2, height / 2).fill('#7f7f7f')
-  // define inital player score
-  //var playerLeft = playerRight = 0
-  // create text for the score, set font properties
-  /*var scoreLeft = draw.text(playerLeft + '').font({
-    size: 32,
-    family: 'Menlo, sans-serif',
-    anchor: 'end',
-    fill: '#fff'
-  }).move(width / 2 - 10, 10)*/
+
 
   // random velocity for the ball at start
   var vx = 0, vy = 0
@@ -84,20 +98,39 @@ function startStuff() {
     , paddleSpeed = 5
 
   SVG.on(document, 'keydown', function (e) {
-    paddleDirection = e.keyCode == 40 ? 1 : e.keyCode == 38 ? -1 : 0
-    e.preventDefault()
-  })
-
-  SVG.on(document, 'keyup', function (e) {
-    paddleDirection = 0
-    e.preventDefault()
-  })
-
-  draw.on('click', function () {
-    if (vx === 0 && vy === 0) {
-      vx = Math.random() * 500 - 150
-      vy = Math.random() * 500 - 150
+    switch (e.keyCode) {
+      case 37://Left Key or 'A'
+      case 65:
+      case 100:
+        turret.left()
+        break;
+      case 39://Right Key or 'D'
+      case 68:
+      case 102:
+        turret.right()
+        break;
+      case 38://Up Key or 'W'
+      case 87:
+      case 104:
+        debugMsg("Up")
+        break;
+      case 40://Down Key or 'S'
+      case 83:
+      case 98:
+        debugMsg("Down")
+        break;
+      default:
+        debugMsg("e.keyCode=" + e.keyCode)
+        break;
     }
+
+    e.preventDefault()
+  })
+  SVG.on(document, 'keyup', function (e) { e.preventDefault() })
+
+  draw.on('click', function (e) {
+    console.log(e)
+    debugMsg(e.clientX + "," + e.clientY + ":" + e.target.id)
   })
 
   function reset() {
@@ -142,16 +175,6 @@ function startStuff() {
       blast.remove()
     })
   }
-  var debugBoard = draw.text("")
-    .font({ size: 32, family: 'Menlo, sans-serif', anchor: 'start', fill: '#888' })
-  function debugMsg(msg) {
-    return debugBoard
-      .text(msg)
-      .animate(111)
-      .move((width - debugBoard.length()) / 2, 4)
-  }
-  debugMsg("testing")
-  debugMsg("Again testing ")
-  debugMsg("This is what I want to show")
+
 
 }
