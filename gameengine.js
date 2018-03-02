@@ -15,7 +15,7 @@ Game.prototype = {
 
 function startStuff() {
   var draw = new SVG('gamescreen').size(640, 480)
-  //var rect = draw.rect(100, 100).attr({ fill: '#f06' })
+  var rect = draw.rect(100, 100).attr({ fill: '#f06' })
 
   //var link = draw.link('http://svgdotjs.github.io/')
   //link.show("Dumbledoor")
@@ -98,7 +98,18 @@ function startStuff() {
   // draw bbox
   var b = rect.bbox()
   draw.rect(b.width, b.height).addClass('box').move(b.x, b.y)*/
+  //rect.animate(1000).move(600, 100).loop(null, true)
 
+  var ellipse = draw.ellipse(100, 100).attr('cx', '20%').fill('#333')
 
+  rect.animate(3000).move(100, 100).during(function (pos, morph, eased, situation) {
+    // numeric values
+    ellipse.size(morph(100, 200), morph(100, 50))
 
+    // unit strings
+    ellipse.attr('cx', morph('20%', '80%'))
+
+    // hex color strings
+    ellipse.fill(morph('#333', '#ff0066'))
+  }).loop(null, true)
 }
