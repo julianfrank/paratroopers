@@ -14,93 +14,160 @@ Game.prototype = {
 }
 
 function startStuff() {
-  var draw = new SVG('gamescreen').size(640, 480)
-  var rect = draw.rect(100, 100).attr({ fill: '#f06' })
+  // define document width and height
+  var width = 640, height = 480
+  // create SVG document and set its size
+  var draw = SVG('gamescreen').size(width, height)
+  draw.viewbox(0, 0, 640, 480)
+  // draw background
+  var background = draw.rect(width, height).fill('black')
+  //debugBoard
+  var debugBoard = draw.text("")
+    .font({ size: 16, family: 'Menlo, sans-serif', anchor: 'middle', fill: '#888' })
+    .move(width / 2, height / 3)
+  function debugMsg(msg) { return debugBoard.text(msg + "\n" + debugBoard.text()) }
+  debugMsg("Testing 1 2 3")
 
-  //var link = draw.link('http://svgdotjs.github.io/')
-  //link.show("Dumbledoor")
-  //var rect = link.rect(200, 200).move(100, 100).radius(100, 100)
-  //var circle = draw.circle(100).animate(500).move(400, 100).attr({ fill: "red" })
-  //var ellipse = draw.ellipse(100, 50).move(300, 100)
-  //var ellipse2 = draw.ellipse(100, 50).move(500, 100)
-  //ellipse2.radius(25, 50)
-  //var line = draw.line(50, 50, 100, 150).stroke({ width: 5 })
-  //var polyline = draw.polyline('0,0 100,50 50,100').fill('none').stroke({ width: 5 })
-  //polyline.animate(3000).plot([[0, 0], [100, 50], [50, 100], [150, 50], [200, 50], [250, 100], [300, 50], [350, 50]])
+  var turret = {
+    me: null,
+    angle: 0,
+    init: function () {
+      draw.path('M320 480 h -10 s 10 -20 20 0 z').stroke({ width: 9, color: "green", linecap: 'round' }).fill("green")
+      this.me = draw.line(320, 480, 320, 450).stroke({ width: 9, color: "green", linecap: 'round' })
+      this.update()
+    },
+    left: function () {
+      this.angle = Math.max(-45, this.angle - 1)
+      this.update()
+    },
+    right: function () {
+      this.angle = Math.min(45, this.angle + 1)
+      this.update()
+    },
+    update: function () {
+      this.me.rotate(this.angle, 320, 480)
+    }
+  }
+  turret.init()
 
-  //var polygon = draw.polygon('0,0 100,50 50,100').fill('none').stroke({ width: 1 }).animate(2000).move(300, 200)
-  //polygon.animate(3000).plot([[0, 0], [100, 50], [50, 100], [150, 50], [200, 50], [250, 100], [300, 50], [350, 50]])
+  let rConv = Math.PI / 180
+  var bombs = {
+    bombArray: [],
+    init: function () {
+      this.bombArray = []
+    },
+    newBomb: function (angle) {
+      if (this.bombArray.length < 7) {
+        this.bombArray.push({
+          x: 320, y: 480,
+          vx: 3 * Math.sin(angle * rConv), vy: 3,
+          sprite: draw.circle(5).fill("green")
+        })
+      }
+    },
+    update: function () {
+      this.bombArray.forEach((bomb, i) => {
+        bomb.x += bomb.vx
+        bomb.y = Math.max(-10, bomb.y - bomb.vy)
+        bomb.sprite.center(bomb.x, bomb.y)
+        planes.checkPlane(bomb.x, bomb.y)
+        if (bomb.y == -10) this.bombArray.splice(i, 1)
+      })
+    }
+  }
+  bombs.init()
 
-  //var path = draw.path('M0 0 H50 A20 20 0 1 0 100 50 v25 C50 125 0 85 0 85 z')
-  //path.animate(2000).plot('M10 80 C 40 150, 65 150, 95 80 S 150 10, 180 80').loop(true, true)
+  var planes = {
+    planesArray: [],
+    init: function () { for (let i = 0; i < 4; i++) { this.newPlane() } },
+    newPlane: function () {
+      this.planesArray.push({
+        x: -Math.round(Math.random() * 1000), y: Math.round(Math.random() * 200), vx: Math.round(Math.random() * 7) + 1,
+        sprite: draw.path("M -100 -100 h 40 l 5 5 l -15 5 h -33 l -10 -20 h 5 0 z").fill("green")
+      })
+    },
+    update: function () {
+      this.planesArray.forEach((plane, i) => {
+        this.planesArray[i].x += this.planesArray[i].vx
+        if (this.planesArray[i].x > 650) {
+          this.planesArray[i].x = -Math.round(Math.random() * 1000)
+          this.planesArray[i].y = Math.round(Math.random() * 200)
+          this.planesArray[i].vx = Math.round(Math.random() * 7) + 1
+        }
+        this.planesArray[i].sprite.center(this.planesArray[i].x, this.planesArray[i].y)
+      })
+    },
+    checkPlane: function (x, y) {
+      this.planesArray.forEach((plane, i) => {
+        if (plane.sprite.inside(x, y)) {
+          debugMsg("hit " + plane.sprite.id())
+          plane.sprite.remove()
+          this.planesArray.splice(i, 1)
+          boomAt(x, y)
+          if (this.planesArray.length == 0) debugMsg("You Win!")
+        }
+      })
+    }
+  }
+  planes.init()
 
-  //var text = draw.text("Lorem ipsum dolor sit amet consectetur.\nCras sodales imperdiet auctor.")
-  /*var text = draw.text(function (add) {
-    add.tspan('Lorem ipsum dolor sit amet ').newLine()
-    add.tspan('consectetur').fill('#f06')
-    add.tspan('.')
-    add.tspan('Cras sodales imperdiet auctor.').newLine().dx(20)
-    add.tspan('Nunc ultrices lectus at erat').newLine()
-    add.tspan('dictum pharetra elementum ante').newLine()
-  })*/
-  //var text = draw.text('I know that eggs do well to stay out of frying pans.')
-  //text.move(20, 20).font({ fill: '#f06', family: 'Inconsolata' })
-  /*var text = draw.text(function (add) {
-    add.tspan('We go ')
-    add.tspan('up').fill('#f09').dy(-40)
-    add.tspan(', then we go down, then up again').dy(40)
+  // update is called on every animation step
+  function update(dt) {
+    planes.update()
+    bombs.update()
+  }
+  var lastTime, animFrame
+  function callback(ms) {    // we get passed a timestamp in milliseconds we use it to determine how much time has passed since the last call
+    if (lastTime) {
+      update((ms - lastTime) / 1000) // call update and pass delta time in seconds
+    }
+    lastTime = ms
+    animFrame = requestAnimationFrame(callback)
+  }
+  callback()
+
+  SVG.on(document, 'keydown', function (e) {
+    switch (e.keyCode) {
+      case 37://Left Key or 'A'
+      case 65:
+      case 100:
+        turret.left()
+        break;
+      case 39://Right Key or 'D'
+      case 68:
+      case 102:
+        turret.right()
+        break;
+      case 38://Up Key or 'W'
+      case 87:
+      case 104:
+        bombs.newBomb(turret.angle)
+        break;
+      case 40://Down Key or 'S'
+      case 83:
+      case 98:
+        debugMsg("Down")
+        break;
+      case 32:
+        debugMsg("Fire")
+        break;
+      default:
+        debugMsg("e.keyCode=" + e.keyCode)
+        break;
+    }
+    e.preventDefault()
   })
-  var path = 'M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100'
-  text.path(path).font({ size: 42.5, family: 'Verdana' })
-}*/
+  SVG.on(document, 'keyup', function (e) { e.preventDefault() })
+  draw.on('click', (e) => debugMsg(e.clientX + "," + e.clientY + ":" + e.target.id))
 
-  /*var image = draw.image('https://www.gstatic.com/webp/gallery3/1.png').loaded(function (loader) {
-    this.size(loader.width, loader.height)
-  })
-  image.move(200, 200)*/
-  /*
-    var pattern = draw.pattern(20, 20, function (add) {
-      add.rect(20, 20).fill('#f06')
-      add.rect(10, 10).fill('#0f9')
-      add.rect(10, 10).move(10, 10).fill('#fff')
-    })
-    pattern.update(function (add) {
-      add.circle(15).center(10, 10)
-    })
-    draw.rect(100, 100).move(20, 20).radius(10).fill(pattern)*/
-
-  /*var ellipse = draw.ellipse(80, 40).move(10, 10).fill({ color: '#fff' })
-  var text = draw.text('SVG.JS').move(10, 10).font({ size: 36 }).fill({ color: '#fff' })
-  var mask = draw.mask().add(text).add(ellipse)
-  draw.rect(100, 100).maskWith(mask)*/
-
-  /*var rect = draw.rect(100, 100).fill('#f09')
-  var use = draw.use(rect).move(200, 200)
-  rect.animate(2000).fill("green")*/
-
-  /*var path = draw.path('M0 0 A50 50 0 0 1 50 50 A50 50 0 0 0 100 100')
-  path.fill('none').move(20, 20).stroke({ width: 1, color: '#ccc' })
-  path.marker('start', 10, 10, function (add) {
-    add.circle(10).fill('#f06')
-  })
-  path.marker('mid', 10, 10, function (add) {
-    add.rect(5, 10).cx(5).fill('#ccc')
-  })
-  path.marker('end', 20, 20, function (add) {
-    add.circle(6).center(4, 5)
-    add.circle(6).center(4, 15)
-    add.circle(6).center(12, 10)
-    this.fill('#0f9')
-  })*/
-
-  // draw transformed rect
-  /*var rect = draw.rect(175, 175).move(75, 75).rotate(20).scale(1, 0.5)
-  // draw bbox
-  var b = rect.bbox()
-  draw.rect(b.width, b.height).addClass('box').move(b.x, b.y)*/
-  //rect.animate(1000).move(600, 100).loop(null, true)
-
-  var ellipse = draw.ellipse(100, 100).attr('cx', '20%').fill('#333')
+  // show visual explosion 
+  function boomAt(x, y) {
+    // create circle to carry the gradient
+    var blast = draw.circle(555)
+    blast.center(x, y).fill("green")
+    // animate to invisibility
+    blast.animate(1000, '>').opacity(0).after(function () { blast.remove() })
+  }
 
   rect.animate(3000).move(100, 100).during(function (pos, morph, eased, situation) {
     // numeric values
