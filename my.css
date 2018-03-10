@@ -1,6 +1,7 @@
 body {
     background-color: darkgray;
     color: white;
+    margin: 0;
 }
 
 h1 {
@@ -15,4 +16,9 @@ p {
 
 pre{
     color: greenyellow;
+}
+
+canvas { 
+    width: 100%; 
+    height: 100% 
 }
