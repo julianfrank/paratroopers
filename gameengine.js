@@ -3,9 +3,9 @@
 function startStuff() {
 
     var container, stats;
-    var camera, scene, raycaster, renderer;
+    var camera, scene, raycaster, renderer, intersects
     var mouse = new THREE.Vector2(), INTERSECTED;
-    var radius = 500, theta = 0;
+    var radius = 888, theta = 0;
     var frustumSize = 1000;
     init();
     animate();
@@ -18,21 +18,21 @@ function startStuff() {
         camera = new THREE.OrthographicCamera(
             frustumSize * aspect / - 2, frustumSize * aspect / 2,
             frustumSize / 2, frustumSize / - 2,
-            1, frustumSize)
+            1, frustumSize * 2)
         //Scene Setup
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0xf0f0f0);
         //Light Setup
         var light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1).normalize();
+        light.position.set(100, 100, 100).normalize();
         scene.add(light);
         //Add Boxes
         var geometry = new THREE.BoxBufferGeometry(44, 44, 44);
-        for (var i = 0; i < 4; i++) {
+        for (var i = 0; i < 44; i++) {
             var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }));
-            object.position.x = Math.random() * radius - radius/2
-            object.position.y = Math.random() * radius - radius/2
-            object.position.z = Math.random() * radius - radius/2
+            object.position.x = Math.random() * radius - radius / 2
+            object.position.y = Math.random() * radius - radius / 2
+            object.position.z = Math.random() * radius - radius / 2
             object.rotation.x = Math.random() * 2 * Math.PI
             object.rotation.y = Math.random() * 2 * Math.PI
             object.rotation.z = Math.random() * 2 * Math.PI
@@ -85,7 +85,7 @@ function startStuff() {
         camera.updateMatrixWorld();
         // find intersections
         raycaster.setFromCamera(mouse, camera);
-        var intersects = raycaster.intersectObjects(scene.children);
+        intersects = raycaster.intersectObjects(scene.children);
         if (intersects.length > 0) {
             if (INTERSECTED != intersects[0].object) {
                 if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
