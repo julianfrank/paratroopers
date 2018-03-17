@@ -1,11 +1,11 @@
 window.onload = function () {
-    var g = new Game()
+    /*var g = new Game()
     g.init({ test: "working", xMax: 80, yMax: 60 })
     g.fullInit()
     g.render()
 
     var start = null;
-    var element = document.getElementById('screen');
+    var element = document.getElementById('gamescreen');
     element.style.position = 'absolute';
 
     function step(timestamp) {
@@ -20,5 +20,7 @@ window.onload = function () {
         }
     }
 
-    window.requestAnimationFrame(step);
+    window.requestAnimationFrame(step);*/
+    startStuff()
 }
+

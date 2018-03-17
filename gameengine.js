@@ -2,6 +2,81 @@
 
 function startStuff() {
 
+    var g = new GameEngine({ autoWindow: true, dsds: "dsdfs" })
+    console.log(g)
+
+    //oldAnime()
+}
+
+class GameEngine {
+
+    constructor(opts) {
+        this._defaults = {
+            xMin: 0, yMin: 0,
+            xMax: 640, yMax: 480,
+            near: 1, far: 2000,
+            scrEl: "gamescreen",
+            borderColor: "#FFFFFF", borderWidth: "4", backgroundColor: "#000000",
+            autoWindow: true//Only used during object creation...Cannot change during runtime!
+        }
+        this._initVars = {}
+        this._container = document.getElementById(this._defaults.scrEl)
+        this._frameNumber=0
+
+        for (const key in opts) {
+            if (this._defaults[key]) {
+                this._defaults[key] = opts[key]
+            } else {
+                this._initVars[key] = opts[key]
+            }
+        }
+
+        this._initWindow()
+        this.Start()
+    }
+
+    _initWindow() {
+        if (document.getElementById(this._defaults.scrEl)) {
+            this._container = document.getElementById(this._defaults.scrEl)
+        } else {
+            this._container = document.createElement('div')
+            this._container.setAttribute("id", _defaults.scrEl)
+            document.body.appendChild(this._container);
+        }
+        this._scene = new THREE.Scene();
+        this._camera = this._initCamera()
+        this._scene.add(this._camera)
+        this._renderer = new THREE.WebGLRenderer()
+        this._renderer.setPixelRatio(window.devicePixelRatio)
+        this._renderer.setSize(window.innerWidth, window.innerHeight)
+        if (this._defaults.autoWindow) {
+            window.onresize = (ev) => {
+                ev.preventDefault()
+                //this._camera.left = this._defaults.xMin; this._camera.right = this._defaults.xMax; this._camera.top = this._defaults.yMin; this._camera.bottom = this._defaults.xMax 
+                this._renderer.setSize(window.innerWidth, window.innerHeight)
+                this._camera.updateProjectionMatrix()
+            }
+        }
+        this._container.appendChild(this._renderer.domElement)
+        this._renderer.render(this._scene, this._camera)
+    }
+    _initCamera() { return new THREE.OrthographicCamera(this._defaults.xMin, this._defaults.yMin, this._defaults.xMax, this._defaults.yMax, this._defaults.near, this._defaults.far) }
+
+    Start() {
+        var self=this
+        function animate() {
+            self._frameNumber=requestAnimationFrame(animate)
+            render()
+        }
+        function render(){
+            self._renderer.render(self._scene, self._camera)
+        }
+        animate()
+    }
+}
+
+
+function oldAnime() {
     var container, stats;
     var camera, scene, raycaster, renderer, intersects
     var mouse = new THREE.Vector2(), INTERSECTED;
