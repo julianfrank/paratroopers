@@ -3,8 +3,18 @@
 function startStuff() {
 
     var g = new GameEngine({ autoWindow: true, dsds: "dsdfs" })
-    console.log(g)
 
+
+    var geometry = new THREE.BoxGeometry(10, 10, 10);
+    var material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    var cube = new THREE.Mesh(geometry, material);
+    cube.position = new THREE.Vector3(320, 240, 0)
+
+    g.AddObject(cube)
+
+    var gridHelper = new THREE.GridHelper(1000, 100);
+    g.AddObject(gridHelper);
+    console.log(g)
     //oldAnime()
 }
 
@@ -14,14 +24,14 @@ class GameEngine {
         this._defaults = {
             xMin: 0, yMin: 0,
             xMax: 640, yMax: 480,
-            near: 1, far: 2000,
+            near: 1, far: 1000,
             scrEl: "gamescreen",
-            borderColor: "#FFFFFF", borderWidth: "4", backgroundColor: "#000000",
+            borderColor: "#FFFFFF", borderWidth: "4", backgroundColor: "black",
             autoWindow: true//Only used during object creation...Cannot change during runtime!
         }
         this._initVars = {}
         this._container = document.getElementById(this._defaults.scrEl)
-        this._frameNumber=0
+        this._frameNumber = 0
 
         for (const key in opts) {
             if (this._defaults[key]) {
@@ -43,9 +53,18 @@ class GameEngine {
             this._container.setAttribute("id", _defaults.scrEl)
             document.body.appendChild(this._container);
         }
-        this._scene = new THREE.Scene();
+        this._scene = new THREE.Scene()
+        this._scene.background = new THREE.Color(this._defaults.backgroundColor)
+
+        this._ambientLight = new THREE.AmbientLight(0x404040, 1)
+        this._scene.add(this._ambientLight)
+
         this._camera = this._initCamera()
+
+        this._camera.lookAt(new THREE.Vector3(this._camera.position.x, this._camera.position.y, 0))
+        console.log(this._scene.position, this._camera)
         this._scene.add(this._camera)
+
         this._renderer = new THREE.WebGLRenderer()
         this._renderer.setPixelRatio(window.devicePixelRatio)
         this._renderer.setSize(window.innerWidth, window.innerHeight)
@@ -54,24 +73,36 @@ class GameEngine {
                 ev.preventDefault()
                 //this._camera.left = this._defaults.xMin; this._camera.right = this._defaults.xMax; this._camera.top = this._defaults.yMin; this._camera.bottom = this._defaults.xMax 
                 this._renderer.setSize(window.innerWidth, window.innerHeight)
+                this._camera.aspect = window.innerWidth / window.innerHeight
                 this._camera.updateProjectionMatrix()
             }
         }
         this._container.appendChild(this._renderer.domElement)
         this._renderer.render(this._scene, this._camera)
     }
-    _initCamera() { return new THREE.OrthographicCamera(this._defaults.xMin, this._defaults.yMin, this._defaults.xMax, this._defaults.yMax, this._defaults.near, this._defaults.far) }
+    _initCamera() {
+        //let c = new THREE.OrthographicCamera(this._defaults.xMin, this._defaults.yMin, this._defaults.xMax, this._defaults.yMax, this._defaults.near, this._defaults.far)
+        var c = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 )
+        c.position.x = (this._defaults.xMax - this._defaults.xMin) / 2
+        c.position.y = (this._defaults.yMax - this._defaults.yMin) / 2
+        c.position.z = -50
+        return c
+    }
 
     Start() {
-        var self=this
-        function render(){
+        var self = this
+        function render() {
             self._renderer.render(self._scene, self._camera)
         }
         function animate() {
-            self._frameNumber=requestAnimationFrame(animate)
+            self._frameNumber = requestAnimationFrame(animate)
             render()
         }
         animate()
+    }
+
+    AddObject(object) {
+        this._scene.add(object)
     }
 }
 
