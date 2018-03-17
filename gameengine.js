@@ -64,12 +64,12 @@ class GameEngine {
 
     Start() {
         var self=this
+        function render(){
+            self._renderer.render(self._scene, self._camera)
+        }
         function animate() {
             self._frameNumber=requestAnimationFrame(animate)
             render()
-        }
-        function render(){
-            self._renderer.render(self._scene, self._camera)
         }
         animate()
     }
