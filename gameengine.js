@@ -41,10 +41,10 @@ class GameEngine {
 
     initOrthoCamera() {
         let aspect = window.innerWidth / window.innerHeight
-        let fovRad = 7 * Math.atan(Math.max(window.innerWidth, window.innerHeight) / 2 / this.depth)
-        let fovDeg = fovRad * 180 / Math.PI
+        let fovRad = Math.atan(this.depth / window.innerWidth)
+        let fovDeg = (fovRad * 180) / (Math.PI*window.devicePixelRatio)
         console.log(fovDeg)
-        let camera = new THREE.PerspectiveCamera(fovDeg, aspect, 1, this.depth)
+        let camera = new THREE.PerspectiveCamera(fovDeg, window.devicePixelRatio, 1, this.depth)
         camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 700)
         camera.lookAt((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 0)
         camera.up = new THREE.Vector3(0, 1, 0)
@@ -77,10 +77,9 @@ class GameEngine {
 
     oldAnime() {
         let self = this
-        var container, stats
+        var stats
         var raycaster, intersects
         var mouse = new THREE.Vector2(), INTERSECTED
-        var radius = 888, theta = 0
 
         init()
         animate()
