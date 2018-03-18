@@ -42,7 +42,7 @@ class GameEngine {
     initOrthoCamera() {
         let aspect = window.innerWidth / window.innerHeight
         let fovRad = Math.atan(this.depth / window.innerWidth)
-        let fovDeg = (fovRad * 180) / (Math.PI*window.devicePixelRatio)
+        let fovDeg = (fovRad * 180) / (Math.PI * window.devicePixelRatio)
         console.log(fovDeg)
         let camera = new THREE.PerspectiveCamera(fovDeg, window.devicePixelRatio, 1, this.depth)
         camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 700)
@@ -109,6 +109,18 @@ class GameEngine {
                 self.scene.add(zzz)
             })
 
+            /*var bomber = null;
+            var loader = new THREE.JSONLoader();
+            loader.load('./marmelab.json', function(geometry, materials) {
+                bomber = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+                bomber.scale.x = bomber.scale.y = bomber.scale.z = 33
+                bomber.translation = geometry.center()
+                bomber.position.x=320
+                bomber.position.y=240
+                bomber.position.z=50
+                self.scene.add(bomber);
+            })*/
+
 
             //Setup Raycaster to monitor mouse movement and events
             raycaster = new THREE.Raycaster()
@@ -134,8 +146,6 @@ class GameEngine {
             stats.update()
         }
         function render() {
-
-
             // find intersections
             raycaster.setFromCamera(mouse, self.camera)
             intersects = raycaster.intersectObjects(self.scene.children)
