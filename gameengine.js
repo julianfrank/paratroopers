@@ -2,7 +2,7 @@
 
 function startStuff() {
 
-    var g = new GameEngine({ autoWindow: true, dsds: "dsdfs" })
+    var g = new GameEngine({ anchorDiv: "gamescreen", dsds: "dsdfs" })
 
 
 
@@ -12,22 +12,68 @@ function startStuff() {
 class GameEngine {
 
     constructor(opts) {
-        this.frustumSize = 999
-        this.scene = new THREE.Scene()
+        // Initialize Param Vars
+        if (!opts) opts = {}
+        this.xMin = opts.xMin || 0
+        this.xMax = opts.xMax || 640
+        this.yMin = opts.yMin || 0
+        this.yMax = opts.yMax || 480
+        this.depth = opts.depth || 2000
+        this.background = opts.background || 0x888888
+        this.anchorDiv = opts.anchorDiv || null
+        // Start Init Subsystems
+        this.scene = this.initScene()
         this.camera = this.initOrthoCamera()
-        this.renderer
-        this.container = document.createElement('div')
-        document.body.appendChild(this.container)
+        this.renderer = this.initRenderer()
+        this.container = this.initContainer()
+        //Start the music
         this.oldAnime()
     }
 
-    initOrthoCamera() {
-        //OrthographicCamera( left : Number, right : Number, top : Number, bottom : Number, near : Number, far : Number )
-        return new THREE.OrthographicCamera(
-            0, 500,
-            500, 0,
-            1, 2000)
+    initScene() {
+        let scene = new THREE.Scene()
+        scene.background = new THREE.Color(this.background)
+        //Light Setup
+        var light = new THREE.AmbientLight(0xffffff, 1)
+        scene.add(light)
+        return scene
     }
+
+    initOrthoCamera() {
+        let aspect = window.innerWidth / window.innerHeight
+        let fovRad = 7 * Math.atan(Math.max(window.innerWidth, window.innerHeight) / 2 / this.depth)
+        let fovDeg = fovRad * 180 / Math.PI
+        console.log(fovDeg)
+        let camera = new THREE.PerspectiveCamera(fovDeg, aspect, 1, this.depth)
+        camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 700)
+        camera.lookAt((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 0)
+        camera.up = new THREE.Vector3(0, 1, 0)
+        camera.updateMatrixWorld()
+        return camera
+    }
+
+    initRenderer() {
+        var renderer = new THREE.WebGLRenderer()
+        renderer.setPixelRatio(window.devicePixelRatio)
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        return renderer
+    }
+
+    initContainer() {
+        if (this.anchorDiv === null) {
+            let container = document.createElement('div')
+            container.appendChild(this.renderer.domElement)
+            document.body.appendChild(container)
+            return container
+        } else {
+            let container = document.getElementById(this.anchorDiv)
+            container.appendChild(this.renderer.domElement)
+            document.body.appendChild(container)
+            return container
+        }
+    }
+
+
 
     oldAnime() {
         let self = this
@@ -39,60 +85,44 @@ class GameEngine {
         init()
         animate()
         function init() {
-            //Camera Setup
-            var aspect = window.innerWidth / window.innerHeight
-            /*self.camera = new THREE.OrthographicCamera(
-                self.frustumSize * aspect / - 2, self.frustumSize * aspect / 2,
-                self.frustumSize / 2, self.frustumSize / - 2,
-                1, self.frustumSize * 2)*/
-            /*self.camera = new THREE.OrthographicCamera(
-                -500, 500,
-                500, -500,
-                1, 2000)*/
-            self.scene.background = new THREE.Color(0xf0f0f0)
-            //Light Setup
-            var light = new THREE.DirectionalLight(0xffffff, 1)
-            light.position.set(100, 100, 100).normalize()
-            self.scene.add(light)
+            // Edge Objects
+            var edgeConfig = [
+                { x: 0, y: 0, z: 0, color: 0x444444 },
+                { x: 0, y: 0, z: 100, color: 0x0000ff },
+                { x: 0, y: 480, z: 0, color: 0x00ff00 },
+                { x: 0, y: 480, z: 100, color: 0x00ffff },
+                { x: 640, y: 0, z: 0, color: 0xff0000 },
+                { x: 640, y: 0, z: 100, color: 0xff00ff },
+                { x: 640, y: 480, z: 0, color: 0xffff00 },
+                { x: 640, y: 480, z: 100, color: 0xffffff }
+            ]
             //Add Boxes
             var geometry = new THREE.BoxBufferGeometry(44, 44, 44)
-            for (var i = 0; i < 44; i++) {
-                var object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }))
-                object.position.x = Math.random() * radius - radius / 2
-                object.position.y = Math.random() * radius - radius / 2
-                object.position.z = Math.random() * radius - radius / 2
-                object.rotation.x = Math.random() * 2 * Math.PI
-                object.rotation.y = Math.random() * 2 * Math.PI
-                object.rotation.z = Math.random() * 2 * Math.PI
-                object.scale.x = 1
-                object.scale.y = 1
-                object.scale.z = 1
-                self.scene.add(object)
-            }
+            //Add edge boxes
+            edgeConfig.map((x) => {
+                var zzz = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: x.color }))
+                zzz.position.x = x.x
+                zzz.position.y = x.y
+                zzz.position.z = x.z
+                zzz.scale.x = 1
+                zzz.scale.y = 1
+                zzz.scale.z = 1
+                self.scene.add(zzz)
+            })
+
+
             //Setup Raycaster to monitor mouse movement and events
             raycaster = new THREE.Raycaster()
             //Setupself.renderer
-            self.renderer = new THREE.WebGLRenderer()
-            self.renderer.setPixelRatio(window.devicePixelRatio)
-            self.renderer.setSize(window.innerWidth, window.innerHeight)
-            self.container.appendChild(self.renderer.domElement)
+
             //Setup Stats box
             stats = new Stats()
             self.container.appendChild(stats.dom)
             //Mouse move event Manager binding
             document.addEventListener('mousemove', onDocumentMouseMove, false)
-            //Window resize event binding
-            window.addEventListener('resize', onWindowResize, false)
+
         }
-        function onWindowResize() {
-            var aspect = window.innerWidth / window.innerHeight
-            self.camera.left = -self.frustumSize * aspect / 2
-            self.camera.right = self.frustumSize * aspect / 2
-            self.camera.top = self.frustumSize / 2
-            self.camera.bottom = -self.frustumSize / 2
-            self.camera.updateProjectionMatrix()
-            self.renderer.setSize(window.innerWidth, window.innerHeight)
-        }
+
         function onDocumentMouseMove(event) {
             event.preventDefault()
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -105,12 +135,8 @@ class GameEngine {
             stats.update()
         }
         function render() {
-            theta += 0.1
-            self.camera.position.x = radius * Math.sin(THREE.Math.degToRad(theta))
-            self.camera.position.y = radius * Math.sin(THREE.Math.degToRad(theta))
-            self.camera.position.z = radius * Math.cos(THREE.Math.degToRad(theta))
-            self.camera.lookAt(self.scene.position)
-            self.camera.updateMatrixWorld()
+
+
             // find intersections
             raycaster.setFromCamera(mouse, self.camera)
             intersects = raycaster.intersectObjects(self.scene.children)
