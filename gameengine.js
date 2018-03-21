@@ -41,11 +41,13 @@ class GameEngine {
 
     initOrthoCamera() {
         let aspect = window.innerWidth / window.innerHeight
-        let fovRad = Math.atan(this.depth / window.innerWidth)
-        let fovDeg = (fovRad * 180) / (Math.PI * window.devicePixelRatio)
-        console.log(fovDeg)
-        let camera = new THREE.PerspectiveCamera(fovDeg, window.devicePixelRatio, 1, this.depth)
-        camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 700)
+        let diag = Math.sqrt((window.innerWidth*window.innerWidth) + (window.innerHeight*window.innerHeight))
+        let fovRad = 2*Math.atan(diag/(2*this.depth ))
+        let fovDeg = (fovRad * 180) / Math.PI /aspect
+        console.log("fovDeg:",fovDeg)
+        console.log("aspect:",aspect)
+        let camera = new THREE.PerspectiveCamera(fovDeg, aspect, 1, 2*this.depth)
+        camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, this.depth)
         camera.lookAt((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 0)
         camera.up = new THREE.Vector3(0, 1, 0)
         camera.updateMatrixWorld()
@@ -86,14 +88,15 @@ class GameEngine {
         function init() {
             // Edge Objects
             var edgeConfig = [
-                { x: 0, y: 0, z: 0, color: 0x444444 },
+                { x: 0, y: 0, z: 0, color: 0x111111 },
                 { x: 0, y: 0, z: 100, color: 0x0000ff },
                 { x: 0, y: 480, z: 0, color: 0x00ff00 },
                 { x: 0, y: 480, z: 100, color: 0x00ffff },
                 { x: 640, y: 0, z: 0, color: 0xff0000 },
                 { x: 640, y: 0, z: 100, color: 0xff00ff },
                 { x: 640, y: 480, z: 0, color: 0xffff00 },
-                { x: 640, y: 480, z: 100, color: 0xffffff }
+                { x: 640, y: 480, z: 100, color: 0xffffff },
+                { x: 320, y: 240, z: 50, color: 0xf0f0f0 }
             ]
             //Add Boxes
             var geometry = new THREE.BoxBufferGeometry(44, 44, 44)
