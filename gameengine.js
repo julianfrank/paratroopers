@@ -31,7 +31,7 @@ class GameEngine {
     }
 
     initScene() {
-        let scene = new THREE.Scene()
+        let scene = new THREE.Scene({fog:true})
         scene.background = new THREE.Color(this.background)
         //Light Setup
         var light = new THREE.AmbientLight(0xffffff, 1)
@@ -55,9 +55,11 @@ class GameEngine {
     }
 
     initRenderer() {
-        var renderer = new THREE.WebGLRenderer()
+        var renderer = new THREE.WebGLRenderer({antialias:true})
         renderer.setPixelRatio(window.devicePixelRatio)
-        renderer.setSize(window.innerWidth, window.innerHeight)
+        renderer.setSize(this.xMax, this.yMax,false)
+        renderer.shadowMap.enabled=true
+        renderer.shadowMap.type= THREE.PCFSoftShadowMap
         return renderer
     }
 
@@ -96,19 +98,16 @@ class GameEngine {
                 { x: 640, y: 0, z: 100, color: 0xff00ff },
                 { x: 640, y: 480, z: 0, color: 0xffff00 },
                 { x: 640, y: 480, z: 100, color: 0xffffff },
-                { x: 320, y: 240, z: 50, color: 0xf0f0f0 }
+                { x: 320, y: 240, z: 50, color: 0xf88888 }
             ]
             //Add Boxes
             var geometry = new THREE.BoxBufferGeometry(44, 44, 44)
             //Add edge boxes
             edgeConfig.map((x) => {
-                var zzz = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: x.color }))
-                zzz.position.x = x.x
-                zzz.position.y = x.y
-                zzz.position.z = x.z
-                zzz.scale.x = 1
-                zzz.scale.y = 1
-                zzz.scale.z = 1
+                var zzz = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: new THREE.Color(x.color),wireframe:false }))
+                zzz.position.set(x.x,x.y,x.z)
+                zzz.castShadow=true
+                zzz.receiveShadow = true
                 self.scene.add(zzz)
             })
 
@@ -132,6 +131,7 @@ class GameEngine {
             //Setup Stats box
             stats = new Stats()
             self.container.appendChild(stats.dom)
+
             //Mouse move event Manager binding
             document.addEventListener('mousemove', onDocumentMouseMove, false)
 
