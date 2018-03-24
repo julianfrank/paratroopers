@@ -19,6 +19,14 @@ class GameEngine {
         this.depth = opts.depth || 2000
         this.background = opts.background || 0x888888
         this.anchorDiv = opts.anchorDiv || null
+        //Init magic stuff
+        this.mouse = new THREE.Vector2()
+        //Setup Raycaster to monitor mouse movement and events
+        this.raycaster = new THREE.Raycaster()
+        this.INTERSECTED
+        //Setup Stats box
+        this.stats = new Stats()
+
         // Start Init Subsystems
         this.scene = this.initScene()
         this.renderer = this.initRenderer()
@@ -33,11 +41,44 @@ class GameEngine {
         window.addEventListener('resize', () => {
             this.updateRenderer()
             this.updateCamera()
-        })
+        }, false)
+        //Mouse move event Manager binding
+        document.addEventListener('mousemove', (ev) => {
+            this.onDocumentMouseMove(ev)
+        }, false)
         //Start the music
-        this.oldAnime()
+        //this.oldAnime()
+        this.renderer.animate(() => this.render())
     }
 
+    onDocumentMouseMove(event) {
+        event.preventDefault()
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+        this.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
+    }
+
+    render() {
+        let INTERSECTED = this.INTERSECTED
+        // find intersections
+        this.raycaster.setFromCamera(this.mouse, this.camera)
+        let intersects = this.raycaster.intersectObjects(this.scene.children)
+        if (intersects.length > 0) {
+            if (INTERSECTED != intersects[0].object) {
+                if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
+                //console.log(INTERSECTED)
+                INTERSECTED = intersects[0].object
+                INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
+                INTERSECTED.material.color.setHex(0xff0000)
+                //console.log(INTERSECTED.position)
+            }
+        } else {
+            if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
+            INTERSECTED = null
+        }
+        this.renderer.render(this.scene, this.camera)
+        this.stats.update()
+        this.INTERSECTED = INTERSECTED
+    }
 
     initScene() {
         let scene = new THREE.Scene()
@@ -49,22 +90,21 @@ class GameEngine {
 
     initLights() {
         //Ambient Light Setup
-        var alight = new THREE.AmbientLight(0xffffff, 0.4)
+        var alight = new THREE.AmbientLight(0x404040)
         this.scene.add(alight)
         //Hemisphere Light
-        var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.4)
-        hemiLight.position.set(0, 0, 1)
-        this.scene.add(hemiLight)
+        //var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.4)
+        //hemiLight.position.set(0, 0, 1)
+        //this.scene.add(hemiLight)
         //PointLights
-        var pLight = new THREE.PointLight(0xffffff, 1, 1000, 200)
-        pLight.position.set(320, 240, 150)
+        var pLight = new THREE.PointLight(0xffffff, 1, 1000)
+        pLight.position.set(320, 240, 60).normalize()
         pLight.castShadow = true
         //Set up shadow properties for the light
-        pLight.shadow.mapSize.width = 128
-        pLight.shadow.mapSize.height = 128
-        pLight.shadow.camera.near = 1
-        pLight.shadow.camera.far = this.depth
-
+        //pLight.shadow.mapSize.width = 128
+        //pLight.shadow.mapSize.height = 128
+        //pLight.shadow.camera.near = 1
+        //pLight.shadow.camera.far = this.depth
         this.scene.add(pLight)
     }
 
@@ -92,7 +132,7 @@ class GameEngine {
     updateRenderer() {
         let aspect = window.innerWidth / window.innerHeight
         this.renderer.setPixelRatio(aspect)
-        this.renderer.setSize(Math.min(this.xMax - this.xMin, window.innerWidth) , Math.min(this.yMax - this.yMin, window.innerHeight) , false)
+        this.renderer.setSize(Math.min(this.xMax - this.xMin, window.innerWidth), Math.min(this.yMax - this.yMin, window.innerHeight), false)
         this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.autoUpdate = true
@@ -104,6 +144,7 @@ class GameEngine {
     initContainer() {
         let container = (this.anchorDiv === null) ? document.createElement('div') : document.getElementById(this.anchorDiv)
         container.appendChild(this.renderer.domElement)
+        container.appendChild(this.stats.dom)
         document.body.appendChild(container)
         return container
     }
@@ -136,7 +177,10 @@ class GameEngine {
         var geometry = new THREE.SphereGeometry(25, 16, 16)
         //Add edge boxes
         edgeConfig.map((x) => {
-            var zzz = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: new THREE.Color(x.color), wireframe: false }))
+            var zzz = new THREE.Mesh(geometry,
+                new THREE.MeshPhongMaterial({
+                    color: new THREE.Color(x.color)
+                }))
             zzz.position.set(x.x, x.y, x.z)
             zzz.castShadow = true
             zzz.receiveShadow = true
@@ -155,56 +199,6 @@ class GameEngine {
             bomber.position.z=50
             self.scene.add(bomber);
         })*/
-    }
-
-    oldAnime() {
-        let self = this
-        var stats
-        var raycaster, intersects
-        var mouse = new THREE.Vector2(), INTERSECTED
-
-        init()
-        animate()
-        function init() {
-            //Setup Raycaster to monitor mouse movement and events
-            raycaster = new THREE.Raycaster()
-            //Setup Stats box
-            stats = new Stats()
-            self.container.appendChild(stats.dom)
-            //Mouse move event Manager binding
-            document.addEventListener('mousemove', onDocumentMouseMove, false)
-        }
-
-        function onDocumentMouseMove(event) {
-            event.preventDefault()
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
-        }
-        //
-        function animate() {
-            requestAnimationFrame(animate)
-            render()
-            stats.update()
-        }
-        function render() {
-            // find intersections
-            raycaster.setFromCamera(mouse, self.camera)
-            intersects = raycaster.intersectObjects(self.scene.children)
-            if (intersects.length > 0) {
-                if (INTERSECTED != intersects[0].object) {
-                    if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
-                    //console.log(INTERSECTED)
-                    INTERSECTED = intersects[0].object
-                    INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
-                    INTERSECTED.material.color.setHex(0xff0000)
-                    //console.log(INTERSECTED.position)
-                }
-            } else {
-                if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
-                INTERSECTED = null
-            }
-            self.renderer.render(self.scene, self.camera)
-        }
     }
 }
 
