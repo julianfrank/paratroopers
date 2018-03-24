@@ -12,9 +12,9 @@ class GameEngine {
     constructor(opts) {
         // Initialize Param Vars
         if (!opts) opts = {}
-        this.xMin = opts.xMin || 0
+        this.xMin = opts.xMin || -640
         this.xMax = opts.xMax || 640
-        this.yMin = opts.yMin || 0
+        this.yMin = opts.yMin || -480
         this.yMax = opts.yMax || 480
         this.depth = opts.depth || 2000
         this.background = opts.background || 0x888888
@@ -25,27 +25,19 @@ class GameEngine {
         this.camera = this.initCamera()
         this.lights = this.initLights()
         this.container = this.initContainer()
+        this.updateRenderer()
+        this.updateCamera()
         this.addRefObjects()
 
         //Default Listeners
         window.addEventListener('resize', () => {
-            this.renderer.setSize(window.innerWidth, window.innerHeight)
-            this.camera.aspect = window.innerWidth / window.innerHeight
-            this.camera.fov = this.newFOV()
-            this.camera.updateProjectionMatrix()
+            this.updateRenderer()
+            this.updateCamera()
         })
         //Start the music
         this.oldAnime()
     }
-    newFOV() {
-        let aspect = window.innerWidth / window.innerHeight
-        let diag = Math.sqrt((window.innerWidth * window.innerWidth) + (window.innerHeight * window.innerHeight))
-        let fovRad = 2 * Math.atan(diag / (2 * this.depth))
-        let fovDeg = (fovRad * 180) / Math.PI / aspect
-        console.log("fovDeg:", fovDeg)
-        console.log("aspect:", aspect)
-        return fovDeg
-    }
+
 
     initScene() {
         let scene = new THREE.Scene()
@@ -64,38 +56,48 @@ class GameEngine {
         //hemiLight.position.set(0, 0, 1)
         this.scene.add(hemiLight)
         //PointLights
-        var pLight = new THREE.PointLight(0xffffff, 1, 600, 2)
-        pLight.position.set(160, 120, 100)
+        var pLight = new THREE.PointLight(0xffffff, 1, 1000, 2)
+        pLight.position.set(700, 500, 150)
         pLight.castShadow = true
         //Set up shadow properties for the light
         pLight.shadow.mapSize.width = 128
         pLight.shadow.mapSize.height = 128
-        pLight.shadow.camera.near = 1       
-        pLight.shadow.camera.far = this.depth/4      
+        pLight.shadow.camera.near = 1
+        pLight.shadow.camera.far = this.depth / 4
 
         this.scene.add(pLight)
     }
 
-    initCamera() {
-        let camera = new THREE.PerspectiveCamera(35, 1, 1, this.depth)
-        camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, this.depth)
-        camera.lookAt((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 0)
-        camera.up = new THREE.Vector3(0, 1, 0)
-        this.renderer.setSize(this.xMax, this.yMax, false)
-        camera.aspect = window.innerWidth / window.innerHeight
-        camera.fov = this.newFOV()
-        camera.updateProjectionMatrix()
-        return camera
+    newFOV() {
+        let aspect = window.innerWidth / window.innerHeight
+        let diag = Math.sqrt(((this.xMax-this.xMin) * (this.xMax-this.xMin)) + ((this.yMax-this.yMin) * (this.yMax-this.yMin)))
+        let fovRad = 2 * Math.atan(diag / (2 * this.depth))
+        //let fovRad = 2 * Math.atan(window.innerHeight / (2 * this.depth))
+        let fovDeg = Math.round((fovRad * 180) / Math.PI / aspect)
+        console.log("fovDeg:", fovDeg,"aspect:", aspect)
+        return fovDeg
+    }
+    initCamera() { return new THREE.PerspectiveCamera(this.newFOV(), 1, 1, this.depth) }
+    updateCamera() {
+        this.camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, this.depth)
+        this.camera.lookAt((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 0)
+        this.camera.up = new THREE.Vector3(0, 1, 0)
+        this.camera.aspect = window.innerWidth / window.innerHeight
+        this.camera.fov = this.newFOV()
+        this.camera.updateProjectionMatrix()
     }
 
-    initRenderer() {
+    initRenderer() { return new THREE.WebGLRenderer({ antialias: true }) }
+    updateRenderer() {
         let aspect = window.innerWidth / window.innerHeight
-        var renderer = new THREE.WebGLRenderer({ antialias: true })
-        //renderer.setPixelRatio(aspect)
-        renderer.setSize(this.xMax, this.yMax, false)
-        renderer.shadowMap.enabled = true
-        //renderer.shadowMap.type= THREE.PCFSoftShadowMap
-        return renderer
+        this.renderer.setPixelRatio(aspect)
+        this.renderer.setSize(this.xMax-this.xMin, this.yMax-this.yMin, false)
+        this.renderer.setViewport(this.xMin,this.yMin,this.xMax-this.xMin,this.yMax-this.yMin)
+        this.renderer.shadowMap.enabled = true
+        this.renderer.shadowMap.autoUpdate=true
+        this.renderer.physicallyCorrectLights=true
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+        this.renderer.compile(this.scene,this.camera)
     }
 
     initContainer() {
@@ -111,7 +113,7 @@ class GameEngine {
             new THREE.MeshPhongMaterial({ color: 0x444444 })
         )
         backPlane.position.set(320, 240, 0)
-        backPlane.receiveShadow=true
+        backPlane.receiveShadow = true
         this.scene.add(backPlane)
 
         // Edge Objects
