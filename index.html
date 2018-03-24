@@ -15,9 +15,29 @@
 <body>
   <div id="gamescreen"> </div>
 </body>
+<script type="application/x-glsl" id="sky-vertex">  
+  varying vec2 vUV;
+  
+  void main() {  
+    vUV = uv;
+    vec4 pos = vec4(position, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * pos;
+  }
+  </script>
+
+<script type="application/x-glsl" id="sky-fragment">  
+  uniform sampler2D texture;  
+  varying vec2 vUV;
+  
+  void main() {  
+    vec4 sample = texture2D(texture, vUV);
+    gl_FragColor = vec4(sample.xyz, sample.w);
+  }
+  </script>
 <script src="/three.min.js"></script>
 <script src="/stats.min.js"></script>
 
 <script src="/main.js"></script>
 <script src="/gameengine.js"></script>
+
 </html>

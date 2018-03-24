@@ -46,8 +46,10 @@ class GameEngine {
         document.addEventListener('mousemove', (ev) => {
             this.onDocumentMouseMove(ev)
         }, false)
+        //Add Environs
+        this.addFloor()
+        this.addSky()
         //Start the music
-        //this.oldAnime()
         this.renderer.animate(() => this.render())
     }
 
@@ -93,12 +95,12 @@ class GameEngine {
         var alight = new THREE.AmbientLight(0x404040)
         this.scene.add(alight)
         //Hemisphere Light
-        //var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.4)
+        var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1)
         //hemiLight.position.set(0, 0, 1)
-        //this.scene.add(hemiLight)
+        this.scene.add(hemiLight)
         //PointLights
         var pLight = new THREE.PointLight(0xffffff, 1, 1000)
-        pLight.position.set(320, 240, 60).normalize()
+        pLight.position.set(350, 250, 60)
         pLight.castShadow = true
         //Set up shadow properties for the light
         //pLight.shadow.mapSize.width = 128
@@ -106,6 +108,9 @@ class GameEngine {
         //pLight.shadow.camera.near = 1
         //pLight.shadow.camera.far = this.depth
         this.scene.add(pLight)
+        var sphereSize = 111
+        var pointLightHelper = new THREE.PointLightHelper(pLight, sphereSize)
+        this.scene.add(pointLightHelper)
     }
 
     newFOV() {
@@ -133,11 +138,12 @@ class GameEngine {
         let aspect = window.innerWidth / window.innerHeight
         this.renderer.setPixelRatio(aspect)
         this.renderer.setSize(Math.min(this.xMax - this.xMin, window.innerWidth), Math.min(this.yMax - this.yMin, window.innerHeight), false)
-        this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
+        //this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.autoUpdate = true
         this.renderer.physicallyCorrectLights = true
         this.renderer.shadowMap.type = THREE.BasicShadowMap
+        this.renderer.autoClear = false
         this.renderer.compile(this.scene, this.camera)
     }
 
@@ -150,14 +156,6 @@ class GameEngine {
     }
 
     addRefObjects() {
-        let backPlane = new THREE.Mesh(
-            new THREE.BoxGeometry(1280, 960, 1),
-            new THREE.MeshPhongMaterial({ color: 0x444444 })
-        )
-        backPlane.position.set(0, 0, 0)
-        backPlane.receiveShadow = true
-        this.scene.add(backPlane)
-
         // Edge Objects
         var edgeConfig = [
             { x: -640, y: -480, z: 0, color: 0x000000 },
@@ -177,16 +175,12 @@ class GameEngine {
         var geometry = new THREE.SphereGeometry(25, 16, 16)
         //Add edge boxes
         edgeConfig.map((x) => {
-            var zzz = new THREE.Mesh(geometry,
-                new THREE.MeshPhongMaterial({
-                    color: new THREE.Color(x.color)
-                }))
+            var zzz = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: x.color }))
             zzz.position.set(x.x, x.y, x.z)
             zzz.castShadow = true
-            zzz.receiveShadow = true
+            //zzz.receiveShadow = true
             this.scene.add(zzz)
         })
-
 
         /*var bomber = null;
         var loader = new THREE.JSONLoader();
@@ -199,6 +193,38 @@ class GameEngine {
             bomber.position.z=50
             self.scene.add(bomber);
         })*/
+    }
+
+    addFloor() {
+        var loader = new THREE.TextureLoader();
+        loader.load('floor.jpg',
+            (floorTexture) => {
+                floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+                floorTexture.repeat.set(4, 7);
+                var floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture, side: THREE.DoubleSide });
+                var floorGeometry = new THREE.BoxGeometry(2222, 11, this.depth)
+                var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                floor.position.y = this.yMin
+                floor.receiveShadow = true
+                this.scene.add(floor)
+            }, undefined,
+            (err) => console.error(err)
+        )
+    }
+
+    addSky() {
+        var loader = new THREE.TextureLoader();
+        loader.load('skydome.jpg',
+            (texture) => {
+                let backPlane = new THREE.Mesh(
+                    new THREE.BoxGeometry(window.innerWidth*2, window.innerHeight*2, 1),
+                    new THREE.MeshPhongMaterial({ color: "white",map:texture })
+                )
+                backPlane.position.set(0, 0, 0)
+                backPlane.receiveShadow = true
+                this.scene.add(backPlane)
+            }
+        )
     }
 }
 
