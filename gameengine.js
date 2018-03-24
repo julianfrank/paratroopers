@@ -76,7 +76,7 @@ class GameEngine {
         let scene = new THREE.Scene({castShadow:true})
         scene.background = new THREE.Color(this.background)
         //scene.fog=new THREE.Fog(0x888888,this.depth-25,this.depth)
-        scene.fog = new THREE.FogExp2(0xffffff, 0.001)
+        scene.fog = new THREE.FogExp2(0xffffff, 0.0007)
         return scene
     }
 
@@ -140,11 +140,9 @@ class GameEngine {
         return container
     }
 
-    
-
     addFloor() {
         var loader = new THREE.TextureLoader();
-        loader.load('floor.jpg',
+        loader.load('assets/floor.jpg',
             (floorTexture) => {
                 floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
                 floorTexture.repeat.set(1, 3)
@@ -161,7 +159,7 @@ class GameEngine {
 
     addSky() {
         var loader = new THREE.TextureLoader();
-        loader.load('skydome.jpg',
+        loader.load('assets/skydome.jpg',
             (texture) => {
                 let backPlane = new THREE.Mesh(
                     new THREE.BoxGeometry(window.innerWidth * 2, (this.yMax - this.yMin) * 2, 1),

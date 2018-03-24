@@ -5,16 +5,24 @@ window.onload = () => {
     document.addEventListener("keydown", onDocumentKeyDown, false);
     function onDocumentKeyDown(event) {
         var keyCode = event.which
-        let myBall = g.scene.getObjectByName("center")
+        let myBall = g.scene.getObjectByName("center"),
+            bomber = g.scene.getObjectByName("bomber")
+
         switch (keyCode) {
             case 37://Left key
                 myBall.position.x--
                 break;
+            case 38://Up Key
+                bomber.rotation.x+=(Math.PI/180)
+                break;
             case 39://Right Key
                 myBall.position.x++
                 break;
+            case 40://Down Key
+                bomber.rotation.x-=(Math.PI/180)
+                break;
             default:
-                console.log(keyCode,myBall.position)
+                console.log(keyCode, myBall.position)
                 break;
         }
     }
@@ -47,15 +55,15 @@ function addRefObjects(ge) {
         ge.scene.add(zzz)
     })
 
-    /*var bomber = null;
     var loader = new THREE.JSONLoader();
-    loader.load('./marmelab.json', function(geometry, materials) {
+    loader.load('assets/bomber.json', function (geometry, materials) {
         bomber = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
         bomber.scale.x = bomber.scale.y = bomber.scale.z = 33
         bomber.translation = geometry.center()
-        bomber.position.x=320
-        bomber.position.y=240
-        bomber.position.z=50
-        self.scene.add(bomber);
-    })*/
+        bomber.position.x = 320
+        bomber.position.y = 240
+        bomber.position.z = 50
+        bomber.name = "bomber"
+        ge.scene.add(bomber);
+    })
 }
