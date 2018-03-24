@@ -1,25 +1,32 @@
 window.onload = () => {
-    var g = new GameEngine({ dsds: "dsdfs" })
+    var g = new GameEngine({
+        xMin: 0,
+        xMax: 1920,
+        yMin: 0,
+        yMax: 1080
+    })
     addRefObjects(g)
+    addBunker(g)
 
     document.addEventListener("keydown", onDocumentKeyDown, false);
     function onDocumentKeyDown(event) {
         var keyCode = event.which
         let myBall = g.scene.getObjectByName("center"),
-            bomber = g.scene.getObjectByName("bomber")
+            bomber = g.scene.getObjectByName("bomber"),
+            siloLid = g.scene.getObjectByName("silolid")
 
         switch (keyCode) {
             case 37://Left key
-                myBall.position.x--
+                siloLid.position.x--
                 break;
             case 38://Up Key
-                bomber.rotation.x+=(Math.PI/180)
+                bomber.rotation.x += (Math.PI / 180)
                 break;
             case 39://Right Key
-                myBall.position.x++
+                siloLid.position.x++
                 break;
             case 40://Down Key
-                bomber.rotation.x-=(Math.PI/180)
+                bomber.rotation.x -= (Math.PI / 180)
                 break;
             default:
                 console.log(keyCode, myBall.position)
@@ -27,6 +34,46 @@ window.onload = () => {
         }
     }
 }
+
+function addBunker(ge) {
+
+    new THREE.TextureLoader().load('assets/rustyiron.jpg',
+        (texture) => {
+            var siloLid = new THREE.Mesh(
+                //CylinderGeometry(radiusTop : Float, radiusBottom : Float, height : Float, radialSegments : Integer, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
+                new THREE.CylinderGeometry(100, 100, 20, 100),
+                new THREE.MeshPhongMaterial({ map: texture })
+            )
+            siloLid.position.set(1920 / 2, 0, 100)
+            siloLid.up = new THREE.Vector3(0, 1, 0)
+            siloLid.name = "silolid"
+            ge.scene.add(siloLid)
+        })
+    new THREE.TextureLoader().load('assets/blacksteel.jpg',
+        (texture) => {
+            var turretBase = new THREE.Mesh(
+                new THREE.CylinderGeometry(50, 75, 100, 50, 1, false),
+                new THREE.MeshPhongMaterial({ map: texture })
+            )
+            turretBase.position.set(1920 / 2, 20, 100)
+            turretBase.up = new THREE.Vector3(0, 1, 0)
+            turretBase.name = "turretbase"
+            ge.scene.add(turretBase)
+        })
+    new THREE.TextureLoader().load('assets/turretsteel.jpg',
+        (texture) => {
+            var turret = new THREE.Mesh(
+                //SphereGeometry(radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float)
+                new THREE.SphereGeometry(40),
+                new THREE.MeshPhongMaterial({ map: texture })
+            )
+            turret.position.set(1920 / 2, 60, 100)
+            turret.up = new THREE.Vector3(0, 1, 0)
+            turret.name = "turret"
+            ge.scene.add(turret)
+        })
+}
+
 function addRefObjects(ge) {
     // Edge Objects
     var edgeConfig = [
@@ -56,13 +103,11 @@ function addRefObjects(ge) {
     })
 
     var loader = new THREE.JSONLoader();
-    loader.load('assets/bomber.json', function (geometry, materials) {
-        bomber = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+    loader.load('assets/bomber.json', function (geometry) {
+        bomber = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: "red" }));
         bomber.scale.x = bomber.scale.y = bomber.scale.z = 33
         bomber.translation = geometry.center()
-        bomber.position.x = 320
-        bomber.position.y = 240
-        bomber.position.z = 50
+        bomber.position.set(320, 240, 50)
         bomber.name = "bomber"
         ge.scene.add(bomber);
     })

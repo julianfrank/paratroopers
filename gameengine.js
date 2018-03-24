@@ -73,7 +73,7 @@ class GameEngine {
     }
 
     initScene() {
-        let scene = new THREE.Scene({castShadow:true})
+        let scene = new THREE.Scene({ castShadow: true })
         scene.background = new THREE.Color(this.background)
         //scene.fog=new THREE.Fog(0x888888,this.depth-25,this.depth)
         scene.fog = new THREE.FogExp2(0xffffff, 0.0007)
@@ -82,7 +82,7 @@ class GameEngine {
 
     initLights() {
         //Ambient Light Setup
-        var alight = new THREE.AmbientLight(0x404040,0.4)
+        var alight = new THREE.AmbientLight(0x404040, 0.4)
         this.scene.add(alight)
         //Hemisphere Light
         var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1)
@@ -90,7 +90,7 @@ class GameEngine {
         this.scene.add(hemiLight)
         //PointLights
         var pLight = new THREE.PointLight(0xffffff, 10, 1000)
-        pLight.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) /2, 50)
+        pLight.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 50)
         pLight.castShadow = true
         //Set up shadow properties for the light
         pLight.shadow.mapSize.width = 128
@@ -110,7 +110,8 @@ class GameEngine {
 
     updateCamera() {
         //console.log("camera position",(this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, this.depth)
-        this.camera.position.set((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, this.depth)
+        this.camera.position.set((this.xMax + this.xMin) / 2, //(this.yMax + this.yMin) / 2,
+            100,this.depth)
         this.camera.lookAt((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, 0)
         this.camera.up = new THREE.Vector3(0, 1, 0)
         this.camera.aspect = window.innerWidth / window.innerHeight
@@ -162,7 +163,7 @@ class GameEngine {
         loader.load('assets/skydome.jpg',
             (texture) => {
                 let backPlane = new THREE.Mesh(
-                    new THREE.BoxGeometry(window.innerWidth * 2, (this.yMax - this.yMin) * 2, 1),
+                    new THREE.BoxGeometry((this.xMax - this.xMin) * 2, (this.yMax - this.yMin) * 2, 1),
                     new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide })
                 )
                 backPlane.position.set((this.xMax + this.xMin) / 2, (this.yMax + this.yMin), 0)
