@@ -1,12 +1,3 @@
-
-
-function startStuff() {
-
-    var g = new GameEngine({ dsds: "dsdfs" })
-
-    console.log(g)
-}
-
 class GameEngine {
 
     constructor(opts) {
@@ -29,13 +20,12 @@ class GameEngine {
 
         // Start Init Subsystems
         this.scene = this.initScene()
-        this.renderer = this.initRenderer()
-        this.camera = this.initCamera()
+        this.renderer = new THREE.WebGLRenderer({ antialias: false })
+        this.camera = new THREE.PerspectiveCamera(this.newFOV(), 1, 1, this.depth)
         this.lights = this.initLights()
         this.container = this.initContainer()
         this.updateRenderer()
         this.updateCamera()
-        this.addRefObjects()
 
         //Default Listeners
         window.addEventListener('resize', () => {
@@ -70,7 +60,7 @@ class GameEngine {
                 //console.log(INTERSECTED)
                 INTERSECTED = intersects[0].object
                 INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
-                INTERSECTED.material.color.setHex(0xff0000)
+                INTERSECTED.material.color.setHex(0xffffff)
                 //console.log(INTERSECTED.position)
             }
         } else {
@@ -83,7 +73,7 @@ class GameEngine {
     }
 
     initScene() {
-        let scene = new THREE.Scene()
+        let scene = new THREE.Scene({castShadow:true})
         scene.background = new THREE.Color(this.background)
         //scene.fog=new THREE.Fog(0x888888,this.depth-25,this.depth)
         scene.fog = new THREE.FogExp2(0xffffff, 0.001)
@@ -92,37 +82,32 @@ class GameEngine {
 
     initLights() {
         //Ambient Light Setup
-        var alight = new THREE.AmbientLight(0x404040)
+        var alight = new THREE.AmbientLight(0x404040,0.4)
         this.scene.add(alight)
         //Hemisphere Light
         var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1)
         //hemiLight.position.set(0, 0, 1)
         this.scene.add(hemiLight)
         //PointLights
-        var pLight = new THREE.PointLight(0xffffff, 1, 1000)
-        pLight.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) * 0.78, 50)
+        var pLight = new THREE.PointLight(0xffffff, 10, 1000)
+        pLight.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) /2, 50)
         pLight.castShadow = true
         //Set up shadow properties for the light
         pLight.shadow.mapSize.width = 128
         pLight.shadow.mapSize.height = 128
         pLight.shadow.camera.near = 1
         pLight.shadow.camera.far = this.depth
-        this.scene.add(pLight)
+        //this.scene.add(pLight)
         var sphereSize = 111
         var pointLightHelper = new THREE.PointLightHelper(pLight, sphereSize)
         this.scene.add(pointLightHelper)
     }
 
     newFOV() {
-        let aspect = window.innerWidth / window.innerHeight
         let diag = Math.sqrt(((this.xMax - this.xMin) * (this.xMax - this.xMin)) + ((this.yMax - this.yMin) * (this.yMax - this.yMin)))
-        let fovRad = 2 * Math.atan(diag / (2 * this.depth))
-        //let fovRad = 2 * Math.atan(window.innerHeight / (2 * this.depth))
-        let fovDeg = Math.round((fovRad * 180) / Math.PI / aspect)
-        console.log("fovDeg:", fovDeg, "aspect:", aspect)
-        return fovDeg
+        return Math.round(((2 * Math.atan(diag / (2 * this.depth))) * 180) / Math.PI)
     }
-    initCamera() { return new THREE.PerspectiveCamera(this.newFOV(), 1, 1, this.depth) }
+
     updateCamera() {
         //console.log("camera position",(this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, this.depth)
         this.camera.position.set((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, this.depth)
@@ -133,11 +118,11 @@ class GameEngine {
         this.camera.updateProjectionMatrix()
     }
 
-    initRenderer() { return new THREE.WebGLRenderer({ antialias: true }) }
     updateRenderer() {
         let aspect = window.innerWidth / window.innerHeight
         this.renderer.setPixelRatio(aspect)
-        this.renderer.setSize(Math.min(this.xMax - this.xMin, window.innerWidth), Math.min(this.yMax - this.yMin, window.innerHeight), false)
+        //this.renderer.setSize(Math.min(this.xMax - this.xMin, window.innerWidth), Math.min(this.yMax - this.yMin, window.innerHeight), false)
+        this.renderer.setSize(window.innerWidth, window.innerHeight)
         //this.renderer.setViewport(0, 0,  (this.xMax - this.xMin), (this.yMax - this.yMin)/aspect)
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.autoUpdate = true
@@ -155,45 +140,7 @@ class GameEngine {
         return container
     }
 
-    addRefObjects() {
-        // Edge Objects
-        var edgeConfig = [
-            { x: this.xMin, y: this.yMin, z: 0, color: 0x000000 },
-            { x: this.xMin, y: this.yMin, z: 100, color: 0x0000ff },
-            { x: this.xMin, y: this.yMax, z: 0, color: 0x00ff00 },
-            { x: this.xMin, y: this.yMax, z: 100, color: 0x00ffff },
-            { x: this.xMax, y: this.yMin, z: 0, color: 0xff0000 },
-            { x: this.xMax, y: this.yMin, z: 100, color: 0xff00ff },
-            { x: this.xMax, y: this.yMax, z: 0, color: 0xffff00 },
-            { x: this.xMax, y: this.yMax, z: 100, color: 0xffffff },
-
-            { x: 0, y: 0, z: 0, color: "black" },
-            { x: (this.xMax + this.xMin) / 2, y: (this.yMax + this.yMin) / 2, z: 50, color: "yellow" }
-        ]
-        //Add spheres
-        //SphereGeometry(radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float)
-        var geometry = new THREE.SphereGeometry(25, 16, 16)
-        //Add edge boxes
-        edgeConfig.map((x) => {
-            var zzz = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: x.color }))
-            zzz.position.set(x.x, x.y, x.z)
-            zzz.castShadow = true
-            //zzz.receiveShadow = true
-            this.scene.add(zzz)
-        })
-
-        /*var bomber = null;
-        var loader = new THREE.JSONLoader();
-        loader.load('./marmelab.json', function(geometry, materials) {
-            bomber = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-            bomber.scale.x = bomber.scale.y = bomber.scale.z = 33
-            bomber.translation = geometry.center()
-            bomber.position.x=320
-            bomber.position.y=240
-            bomber.position.z=50
-            self.scene.add(bomber);
-        })*/
-    }
+    
 
     addFloor() {
         var loader = new THREE.TextureLoader();
@@ -201,8 +148,8 @@ class GameEngine {
             (floorTexture) => {
                 floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
                 floorTexture.repeat.set(1, 3)
-                var floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture, side: THREE.DoubleSide });
-                var floorGeometry = new THREE.BoxGeometry((this.xMax - this.xMin) * 1.5, 11, this.depth)
+                var floorMaterial = new THREE.MeshPhongMaterial({ map: floorTexture, bumpMap: floorTexture, side: THREE.DoubleSide });
+                var floorGeometry = new THREE.BoxGeometry((this.xMax - this.xMin) * 3, 1, this.depth)
                 var floor = new THREE.Mesh(floorGeometry, floorMaterial);
                 floor.position.set((this.xMax + this.xMin) / 2, this.yMin, 0)
                 floor.receiveShadow = true
@@ -217,10 +164,10 @@ class GameEngine {
         loader.load('skydome.jpg',
             (texture) => {
                 let backPlane = new THREE.Mesh(
-                    new THREE.BoxGeometry(window.innerWidth, window.innerHeight, 1),
+                    new THREE.BoxGeometry(window.innerWidth * 2, (this.yMax - this.yMin) * 2, 1),
                     new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide })
                 )
-                backPlane.position.set((this.xMax+this.xMin)/2, (this.yMax+this.yMin)/1.5, 0)
+                backPlane.position.set((this.xMax + this.xMin) / 2, (this.yMax + this.yMin), 0)
                 backPlane.receiveShadow = false
                 this.scene.add(backPlane)
             }, undefined,
