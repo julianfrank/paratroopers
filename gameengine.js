@@ -49,38 +49,39 @@ class GameEngine {
 
     initLights() {
         //Ambient Light Setup
-        //var light = new THREE.AmbientLight(0xffffff, 0.1)
-        //this.scene.add(light)
+        var alight = new THREE.AmbientLight(0xffffff, 0.4)
+        this.scene.add(alight)
         //Hemisphere Light
         var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.4)
-        //hemiLight.position.set(0, 0, 1)
+        hemiLight.position.set(0, 0, 1)
         this.scene.add(hemiLight)
         //PointLights
-        var pLight = new THREE.PointLight(0xffffff, 1, 1000, 2)
-        pLight.position.set(700, 500, 150)
+        var pLight = new THREE.PointLight(0xffffff, 1, 1000, 200)
+        pLight.position.set(320, 240, 150)
         pLight.castShadow = true
         //Set up shadow properties for the light
         pLight.shadow.mapSize.width = 128
         pLight.shadow.mapSize.height = 128
         pLight.shadow.camera.near = 1
-        pLight.shadow.camera.far = this.depth / 4
+        pLight.shadow.camera.far = this.depth
 
         this.scene.add(pLight)
     }
 
     newFOV() {
         let aspect = window.innerWidth / window.innerHeight
-        let diag = Math.sqrt(((this.xMax-this.xMin) * (this.xMax-this.xMin)) + ((this.yMax-this.yMin) * (this.yMax-this.yMin)))
+        let diag = Math.sqrt(((this.xMax - this.xMin) * (this.xMax - this.xMin)) + ((this.yMax - this.yMin) * (this.yMax - this.yMin)))
         let fovRad = 2 * Math.atan(diag / (2 * this.depth))
         //let fovRad = 2 * Math.atan(window.innerHeight / (2 * this.depth))
         let fovDeg = Math.round((fovRad * 180) / Math.PI / aspect)
-        console.log("fovDeg:", fovDeg,"aspect:", aspect)
+        console.log("fovDeg:", fovDeg, "aspect:", aspect)
         return fovDeg
     }
     initCamera() { return new THREE.PerspectiveCamera(this.newFOV(), 1, 1, this.depth) }
     updateCamera() {
-        this.camera.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, this.depth)
-        this.camera.lookAt((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 0)
+        //console.log("camera position",(this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, this.depth)
+        this.camera.position.set((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, this.depth)
+        this.camera.lookAt((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, 0)
         this.camera.up = new THREE.Vector3(0, 1, 0)
         this.camera.aspect = window.innerWidth / window.innerHeight
         this.camera.fov = this.newFOV()
@@ -91,13 +92,13 @@ class GameEngine {
     updateRenderer() {
         let aspect = window.innerWidth / window.innerHeight
         this.renderer.setPixelRatio(aspect)
-        this.renderer.setSize(this.xMax-this.xMin, this.yMax-this.yMin, false)
-        this.renderer.setViewport(this.xMin,this.yMin,this.xMax-this.xMin,this.yMax-this.yMin)
+        this.renderer.setSize(Math.min(this.xMax - this.xMin, window.innerWidth) , Math.min(this.yMax - this.yMin, window.innerHeight) , false)
+        this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
         this.renderer.shadowMap.enabled = true
-        this.renderer.shadowMap.autoUpdate=true
-        this.renderer.physicallyCorrectLights=true
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
-        this.renderer.compile(this.scene,this.camera)
+        this.renderer.shadowMap.autoUpdate = true
+        this.renderer.physicallyCorrectLights = true
+        this.renderer.shadowMap.type = THREE.BasicShadowMap
+        this.renderer.compile(this.scene, this.camera)
     }
 
     initContainer() {
@@ -109,24 +110,26 @@ class GameEngine {
 
     addRefObjects() {
         let backPlane = new THREE.Mesh(
-            new THREE.BoxGeometry(640, 480, 1),
+            new THREE.BoxGeometry(1280, 960, 1),
             new THREE.MeshPhongMaterial({ color: 0x444444 })
         )
-        backPlane.position.set(320, 240, 0)
+        backPlane.position.set(0, 0, 0)
         backPlane.receiveShadow = true
         this.scene.add(backPlane)
 
         // Edge Objects
         var edgeConfig = [
-            { x: 0, y: 0, z: 0, color: 0x111111 },
-            { x: 0, y: 0, z: 100, color: 0x0000ff },
-            { x: 0, y: 480, z: 0, color: 0x00ff00 },
-            { x: 0, y: 480, z: 100, color: 0x00ffff },
-            { x: 640, y: 0, z: 0, color: 0xff0000 },
-            { x: 640, y: 0, z: 100, color: 0xff00ff },
+            { x: -640, y: -480, z: 0, color: 0x000000 },
+            { x: -640, y: -480, z: 100, color: 0x0000ff },
+            { x: -640, y: 480, z: 0, color: 0x00ff00 },
+            { x: -640, y: 480, z: 100, color: 0x00ffff },
+            { x: 640, y: -480, z: 0, color: 0xff0000 },
+            { x: 640, y: -480, z: 100, color: 0xff00ff },
             { x: 640, y: 480, z: 0, color: 0xffff00 },
             { x: 640, y: 480, z: 100, color: 0xffffff },
-            { x: 320, y: 240, z: 50, color: 0xf88888 }
+
+            { x: 0, y: 0, z: 0, color: "white" },
+            { x: 320, y: 240, z: 50, color: "white" }
         ]
         //Add spheres
         //SphereGeometry(radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float)
@@ -194,6 +197,7 @@ class GameEngine {
                     INTERSECTED = intersects[0].object
                     INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
                     INTERSECTED.material.color.setHex(0xff0000)
+                    //console.log(INTERSECTED.position)
                 }
             } else {
                 if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
