@@ -12,11 +12,11 @@ class GameEngine {
     constructor(opts) {
         // Initialize Param Vars
         if (!opts) opts = {}
-        this.xMin = opts.xMin || -640
+        this.xMin = opts.xMin || 0
         this.xMax = opts.xMax || 640
-        this.yMin = opts.yMin || -480
+        this.yMin = opts.yMin || 0
         this.yMax = opts.yMax || 480
-        this.depth = opts.depth || 2000
+        this.depth = opts.depth || 500
         this.background = opts.background || 0x888888
         this.anchorDiv = opts.anchorDiv || null
         //Init magic stuff
@@ -86,7 +86,7 @@ class GameEngine {
         let scene = new THREE.Scene()
         scene.background = new THREE.Color(this.background)
         //scene.fog=new THREE.Fog(0x888888,this.depth-25,this.depth)
-        //scene.fog = new THREE.FogExp2(0xffffff, 0.0004)
+        scene.fog = new THREE.FogExp2(0xffffff, 0.001)
         return scene
     }
 
@@ -100,13 +100,13 @@ class GameEngine {
         this.scene.add(hemiLight)
         //PointLights
         var pLight = new THREE.PointLight(0xffffff, 1, 1000)
-        pLight.position.set(350, 250, 60)
+        pLight.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) * 0.78, 50)
         pLight.castShadow = true
         //Set up shadow properties for the light
-        //pLight.shadow.mapSize.width = 128
-        //pLight.shadow.mapSize.height = 128
-        //pLight.shadow.camera.near = 1
-        //pLight.shadow.camera.far = this.depth
+        pLight.shadow.mapSize.width = 128
+        pLight.shadow.mapSize.height = 128
+        pLight.shadow.camera.near = 1
+        pLight.shadow.camera.far = this.depth
         this.scene.add(pLight)
         var sphereSize = 111
         var pointLightHelper = new THREE.PointLightHelper(pLight, sphereSize)
@@ -138,13 +138,13 @@ class GameEngine {
         let aspect = window.innerWidth / window.innerHeight
         this.renderer.setPixelRatio(aspect)
         this.renderer.setSize(Math.min(this.xMax - this.xMin, window.innerWidth), Math.min(this.yMax - this.yMin, window.innerHeight), false)
-        //this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
+        //this.renderer.setViewport(0, 0,  (this.xMax - this.xMin), (this.yMax - this.yMin)/aspect)
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.autoUpdate = true
         this.renderer.physicallyCorrectLights = true
         this.renderer.shadowMap.type = THREE.BasicShadowMap
-        this.renderer.autoClear = false
-        this.renderer.compile(this.scene, this.camera)
+        this.renderer.autoClear = true
+        //this.renderer.compile(this.scene, this.camera)
     }
 
     initContainer() {
@@ -158,17 +158,17 @@ class GameEngine {
     addRefObjects() {
         // Edge Objects
         var edgeConfig = [
-            { x: -640, y: -480, z: 0, color: 0x000000 },
-            { x: -640, y: -480, z: 100, color: 0x0000ff },
-            { x: -640, y: 480, z: 0, color: 0x00ff00 },
-            { x: -640, y: 480, z: 100, color: 0x00ffff },
-            { x: 640, y: -480, z: 0, color: 0xff0000 },
-            { x: 640, y: -480, z: 100, color: 0xff00ff },
-            { x: 640, y: 480, z: 0, color: 0xffff00 },
-            { x: 640, y: 480, z: 100, color: 0xffffff },
+            { x: this.xMin, y: this.yMin, z: 0, color: 0x000000 },
+            { x: this.xMin, y: this.yMin, z: 100, color: 0x0000ff },
+            { x: this.xMin, y: this.yMax, z: 0, color: 0x00ff00 },
+            { x: this.xMin, y: this.yMax, z: 100, color: 0x00ffff },
+            { x: this.xMax, y: this.yMin, z: 0, color: 0xff0000 },
+            { x: this.xMax, y: this.yMin, z: 100, color: 0xff00ff },
+            { x: this.xMax, y: this.yMax, z: 0, color: 0xffff00 },
+            { x: this.xMax, y: this.yMax, z: 100, color: 0xffffff },
 
-            { x: 0, y: 0, z: 0, color: "white" },
-            { x: 320, y: 240, z: 50, color: "white" }
+            { x: 0, y: 0, z: 0, color: "black" },
+            { x: (this.xMax + this.xMin) / 2, y: (this.yMax + this.yMin) / 2, z: 50, color: "yellow" }
         ]
         //Add spheres
         //SphereGeometry(radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float)
@@ -200,11 +200,11 @@ class GameEngine {
         loader.load('floor.jpg',
             (floorTexture) => {
                 floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-                floorTexture.repeat.set(4, 7);
+                floorTexture.repeat.set(1, 3)
                 var floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture, side: THREE.DoubleSide });
-                var floorGeometry = new THREE.BoxGeometry(2222, 11, this.depth)
+                var floorGeometry = new THREE.BoxGeometry((this.xMax - this.xMin) * 1.5, 11, this.depth)
                 var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-                floor.position.y = this.yMin
+                floor.position.set((this.xMax + this.xMin) / 2, this.yMin, 0)
                 floor.receiveShadow = true
                 this.scene.add(floor)
             }, undefined,
@@ -217,13 +217,14 @@ class GameEngine {
         loader.load('skydome.jpg',
             (texture) => {
                 let backPlane = new THREE.Mesh(
-                    new THREE.BoxGeometry(window.innerWidth*2, window.innerHeight*2, 1),
-                    new THREE.MeshPhongMaterial({ color: "white",map:texture })
+                    new THREE.BoxGeometry(window.innerWidth, window.innerHeight, 1),
+                    new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide })
                 )
-                backPlane.position.set(0, 0, 0)
-                backPlane.receiveShadow = true
+                backPlane.position.set((this.xMax+this.xMin)/2, (this.yMax+this.yMin)/1.5, 0)
+                backPlane.receiveShadow = false
                 this.scene.add(backPlane)
-            }
+            }, undefined,
+            (err) => console.error(err)
         )
     }
 }
