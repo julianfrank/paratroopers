@@ -7,7 +7,8 @@ class GameEngine {
         this.xMax = opts.xMax || 640
         this.yMin = opts.yMin || 0
         this.yMax = opts.yMax || 480
-        this.depth = opts.depth || 500
+        this.depth = opts.depth || 3333
+        this.fov = opts.fov || 35
         this.background = opts.background || 0x888888
         this.anchorDiv = opts.anchorDiv || null
         //Init magic stuff
@@ -21,16 +22,17 @@ class GameEngine {
         // Start Init Subsystems
         this.scene = this.initScene()
         this.renderer = new THREE.WebGLRenderer({ antialias: false })
-        this.camera = new THREE.PerspectiveCamera(this.newFOV(), 1, 1, this.depth)
+        //PerspectiveCamera( fov : Number, aspect : Number, near : Number, far : Number )
+        this.camera = new THREE.PerspectiveCamera(this.fov, 1, 1, this.depth)
         this.lights = this.initLights()
         this.container = this.initContainer()
         this.updateRenderer()
-        this.updateCamera()
+        this.updateCameraByFOV()
 
         //Default Listeners
         window.addEventListener('resize', () => {
             this.updateRenderer()
-            this.updateCamera()
+            this.updateCameraByFOV()
         }, false)
         //Mouse move event Manager binding
         document.addEventListener('mousemove', (ev) => {
@@ -76,7 +78,7 @@ class GameEngine {
         let scene = new THREE.Scene({ castShadow: true })
         scene.background = new THREE.Color(this.background)
         //scene.fog=new THREE.Fog(0x888888,this.depth-25,this.depth)
-        scene.fog = new THREE.FogExp2(0xffffff, 0.0007)
+        //scene.fog = new THREE.FogExp2(0xffffff, 0.0007)
         return scene
     }
 
@@ -107,15 +109,30 @@ class GameEngine {
         let diag = Math.sqrt(((this.xMax - this.xMin) * (this.xMax - this.xMin)) + ((this.yMax - this.yMin) * (this.yMax - this.yMin)))
         return Math.round(((2 * Math.atan(diag / (2 * this.depth))) * 180) / Math.PI)
     }
-
-    updateCamera() {
+    updateCameraFOV() {
         //console.log("camera position",(this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, this.depth)
         this.camera.position.set((this.xMax + this.xMin) / 2, //(this.yMax + this.yMin) / 2,
-            100,this.depth)
+            100, this.depth)
         this.camera.lookAt((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, 0)
         this.camera.up = new THREE.Vector3(0, 1, 0)
-        this.camera.aspect = window.innerWidth / window.innerHeight
+        //this.camera.aspect = window.innerWidth / window.innerHeight
         this.camera.fov = this.newFOV()
+        this.camera.updateProjectionMatrix()
+    }
+
+    updateCameraByFOV() {
+        
+        
+        let diag = Math.sqrt(((this.xMax - this.xMin) * (this.xMax - this.xMin)) + ((this.yMax - this.yMin) * (this.yMax - this.yMin)))
+        this.camera.position.set((this.xMax + this.xMin) / 2,
+            (this.yMax + this.yMin) / 2,
+            diag / Math.tan(this.fov * Math.PI / 180)
+        )
+        this.camera.lookAt((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, 0)
+        this.camera.up = new THREE.Vector3(0, 1, 0)
+        this.camera.fov = this.fov
+        
+        console.log(diag,this.fov,diag / Math.tan(this.fov * Math.PI / 180))
         this.camera.updateProjectionMatrix()
     }
 

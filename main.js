@@ -41,10 +41,10 @@ function addBunker(ge) {
         (texture) => {
             var siloLid = new THREE.Mesh(
                 //CylinderGeometry(radiusTop : Float, radiusBottom : Float, height : Float, radialSegments : Integer, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
-                new THREE.CylinderGeometry(100, 100, 20, 100),
+                new THREE.CylinderGeometry(100, 100, 10, 100),
                 new THREE.MeshPhongMaterial({ map: texture })
             )
-            siloLid.position.set(1920 / 2, 0, 100)
+            siloLid.position.set(1920 / 2, 5, 100)
             siloLid.up = new THREE.Vector3(0, 1, 0)
             siloLid.name = "silolid"
             ge.scene.add(siloLid)
@@ -52,10 +52,10 @@ function addBunker(ge) {
     new THREE.TextureLoader().load('assets/blacksteel.jpg',
         (texture) => {
             var turretBase = new THREE.Mesh(
-                new THREE.CylinderGeometry(50, 75, 100, 50, 1, false),
+                new THREE.CylinderGeometry(50, 75, 100, 30, 2, false),
                 new THREE.MeshPhongMaterial({ map: texture })
             )
-            turretBase.position.set(1920 / 2, 20, 100)
+            turretBase.position.set(1920 / 2, 55, 100)
             turretBase.up = new THREE.Vector3(0, 1, 0)
             turretBase.name = "turretbase"
             ge.scene.add(turretBase)
@@ -64,10 +64,10 @@ function addBunker(ge) {
         (texture) => {
             var turret = new THREE.Mesh(
                 //SphereGeometry(radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float)
-                new THREE.SphereGeometry(40),
+                new THREE.SphereGeometry(40,20,20),
                 new THREE.MeshPhongMaterial({ map: texture })
             )
-            turret.position.set(1920 / 2, 60, 100)
+            turret.position.set(1920 / 2, 100, 100)
             turret.up = new THREE.Vector3(0, 1, 0)
             turret.name = "turret"
             ge.scene.add(turret)
