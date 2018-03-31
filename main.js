@@ -1,17 +1,12 @@
 window.onload = () => {
-    var g = new GameEngine({
-        xMin: 0,
-        xMax: 1920,
-        yMin: 0,
-        yMax: 1080
-    })
+    var g = new GameEngine({ xMin: 0, xMax: 1920, yMin: 0, yMax: 1080 })
     addRefObjects(g)
     addBunker(g)
 
     var p = new Puppet()
     g.scene.add(p.mesh)
 
-    p.mesh.position.set(800, 600, 2500)
+    p.mesh.position.set(800, 600, 100)
     g.scene.add(p.helper)
 
     document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -23,16 +18,16 @@ window.onload = () => {
 
         switch (keyCode) {
             case 37://Left key
-                p.bones[1].position.z += 10//(Math.PI / 180)
+                p.bones[2].rotation.x -= 11 * (Math.PI / 180)
                 break;
             case 38://Up Key
-                p.bones[1].position.x -= 10//(Math.PI / 180)
+                p.bones[1].position.y += 10//(Math.PI / 180)
                 break;
             case 39://Right Key
-                p.bones[1].position.z -= 10//(Math.PI / 180)
+                p.bones[2].rotation.x += 11 * (Math.PI / 180)
                 break;
             case 40://Down Key
-                p.bones[1].position.x += 10//(Math.PI / 180)
+                p.bones[1].position.y -= 10//(Math.PI / 180)
                 break;
             default:
                 console.log(keyCode, p)
@@ -108,7 +103,7 @@ function addRefObjects(ge) {
         ge.scene.add(zzz)
     })
 
-    var loader = new THREE.JSONLoader();
+    /*var loader = new THREE.JSONLoader();
     loader.load('assets/bomber.json', function (geometry) {
         bomber = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: "red" }));
         bomber.scale.x = bomber.scale.y = bomber.scale.z = 33
@@ -116,5 +111,5 @@ function addRefObjects(ge) {
         bomber.position.set(320, 240, 50)
         bomber.name = "bomber"
         ge.scene.add(bomber);
-    })
+    })*/
 }

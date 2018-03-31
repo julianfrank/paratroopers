@@ -202,8 +202,8 @@ class Puppet {
         //BoxBufferGeometry(width : Float, height : Float, depth : Float, widthSegments : Integer, heightSegments : Integer, depthSegments : Integer)
         //var geometry = new THREE.BoxBufferGeometry(10, 100, 10, 3, 3, 3)
         var geometry = new THREE.CylinderGeometry(
-            5,                       // radiusTop
-            5,                       // radiusBottom
+            50,                       // radiusTop
+            50,                       // radiusBottom
             sizing.height,           // height
             8,                       // radiusSegments
             sizing.segmentCount * 3, // heightSegments
@@ -228,8 +228,8 @@ class Puppet {
 
     initBones() {
 
-        var segmentHeight = 8
-        var segmentCount = 4
+        var segmentHeight = 80
+        var segmentCount = 8
         var height = segmentHeight * segmentCount
         var halfHeight = height * 0.5
 
