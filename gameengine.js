@@ -205,7 +205,11 @@ class Puppet {
         this.bones = undefined
         this.initBones()
 
-        this.x = new TinyTween({duration:4})
+        this.x = new TinyTween({
+            duration: 2, value: {
+                start:0,end: 2 * Math.PI
+            }
+        })
     }
 
     createGeometry(sizing) {
@@ -323,9 +327,10 @@ class TinyTween {
         this.position = this.value.start
     }
     tick() {
+        //console.log(this.position,this.finished, this.value)
         if (!this.finished) {
             this.position = this.value.start + (this.valuegap * (performance.now() - this.time.start) / (this.duration * 1000))
-            if (this.position > this.value.end) {
+            if (Math.abs(this.position - this.value.start) > Math.abs(this.valuegap)) {
                 this.finished = true
                 this.position = this.value.end
             }
@@ -336,5 +341,8 @@ class TinyTween {
     reset() {
         this.time.start = performance.now()
         this.finished = false
+    }
+    stop() {
+        this.finished = true
     }
 }
