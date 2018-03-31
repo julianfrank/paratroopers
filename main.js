@@ -23,16 +23,16 @@ window.onload = () => {
 
         switch (keyCode) {
             case 37://Left key
-                p.mesh.children[0].children[0].children[0].rotation.z -= (Math.PI / 180)
+                p.bones[1].position.z += 10//(Math.PI / 180)
                 break;
             case 38://Up Key
-                p.mesh.children[0].children[0].children[0].rotation.x -= (Math.PI / 180)
+                p.bones[1].position.x -= 10//(Math.PI / 180)
                 break;
             case 39://Right Key
-                p.mesh.children[0].children[0].children[0].rotation.z += (Math.PI / 180)
+                p.bones[1].position.z -= 10//(Math.PI / 180)
                 break;
             case 40://Down Key
-                p.mesh.children[0].children[0].children[0].rotation.x += (Math.PI / 180)
+                p.bones[1].position.x += 10//(Math.PI / 180)
                 break;
             default:
                 console.log(keyCode, p)

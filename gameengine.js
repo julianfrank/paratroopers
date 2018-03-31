@@ -194,6 +194,7 @@ class Puppet {
 
         this.mesh=undefined
         this.helper=undefined
+        this.bones=undefined
         this.initBones()
     }
 
@@ -240,8 +241,8 @@ class Puppet {
         }
 
         var geometry = this.createGeometry(sizing)
-        var bones = this.createBones(sizing)
-        this.mesh = this.createMesh(geometry, bones)
+        this.bones = this.createBones(sizing)
+        this.mesh = this.createMesh(geometry, this.bones)
         this.mesh.scale.multiplyScalar(1)
 
     }
