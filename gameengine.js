@@ -207,7 +207,7 @@ class Puppet {
             sizing.height,           // height
             8,                       // radiusSegments
             sizing.segmentCount * 3, // heightSegments
-            true                     // openEnded
+            false                     // openEnded
         );
         
         for (var i = 0; i < geometry.vertices.length; i++) {
