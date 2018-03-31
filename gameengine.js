@@ -192,9 +192,9 @@ class GameEngine {
 class Puppet {
     constructor() {
 
-        this.mesh=undefined
-        this.helper=undefined
-        this.bones=undefined
+        this.mesh = undefined
+        this.helper = undefined
+        this.bones = undefined
         this.initBones()
     }
 
@@ -209,7 +209,7 @@ class Puppet {
             sizing.segmentCount * 3, // heightSegments
             false                     // openEnded
         );
-        
+
         for (var i = 0; i < geometry.vertices.length; i++) {
 
             var vertex = geometry.vertices[i];
@@ -282,7 +282,20 @@ class Puppet {
         let skeletonHelper = new THREE.SkeletonHelper(mesh)
         skeletonHelper.material.linewidth = 4
         //scene.add(skeletonHelper)
-        this.helper=skeletonHelper
+        this.helper = skeletonHelper
         return mesh
     }
+}
+
+class TinyTween {
+    constructor(opts) {
+        opts = opts || {}
+        this.start = opts.startTime || performance.now()//performance.now() from object creator.. Initiate from creator if trying to chain with other tweeners
+        this.duration = opts.duration || 10//Duration of tween in SECONDS
+        this.end = this.start + this.duration * 1000
+        this.value = opts.value || { start: 0, end: 100 }
+        this.valuegap = this.value.end - this.value.start
+    }
+    tick() { return this.value.start + (this.valuegap * Math.min((performance.now() - this.start) / (this.duration * 1000), 1)) }
+    reset() { this.start = performance.now() }
 }
