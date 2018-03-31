@@ -8,6 +8,12 @@ window.onload = () => {
     addRefObjects(g)
     addBunker(g)
 
+    var p = new Puppet()
+    g.scene.add(p.mesh)
+
+    p.mesh.position.set(800, 600, 2500)
+    g.scene.add(p.helper)
+
     document.addEventListener("keydown", onDocumentKeyDown, false);
     function onDocumentKeyDown(event) {
         var keyCode = event.which
@@ -17,19 +23,19 @@ window.onload = () => {
 
         switch (keyCode) {
             case 37://Left key
-                siloLid.position.x--
+                p.mesh.children[0].children[0].children[0].rotation.z -= (Math.PI / 180)
                 break;
             case 38://Up Key
-                bomber.rotation.x += (Math.PI / 180)
+                p.mesh.children[0].children[0].children[0].rotation.x -= (Math.PI / 180)
                 break;
             case 39://Right Key
-                siloLid.position.x++
+                p.mesh.children[0].children[0].children[0].rotation.z += (Math.PI / 180)
                 break;
             case 40://Down Key
-                bomber.rotation.x -= (Math.PI / 180)
+                p.mesh.children[0].children[0].children[0].rotation.x += (Math.PI / 180)
                 break;
             default:
-                console.log(keyCode, myBall.position)
+                console.log(keyCode, p)
                 break;
         }
     }
@@ -64,7 +70,7 @@ function addBunker(ge) {
         (texture) => {
             var turret = new THREE.Mesh(
                 //SphereGeometry(radius : Float, widthSegments : Integer, heightSegments : Integer, phiStart : Float, phiLength : Float, thetaStart : Float, thetaLength : Float)
-                new THREE.SphereGeometry(40,20,20),
+                new THREE.SphereGeometry(40, 20, 20),
                 new THREE.MeshPhongMaterial({ map: texture })
             )
             turret.position.set(1920 / 2, 100, 100)

@@ -121,8 +121,6 @@ class GameEngine {
     }
 
     updateCameraByFOV() {
-        
-        
         let diag = Math.sqrt(((this.xMax - this.xMin) * (this.xMax - this.xMin)) + ((this.yMax - this.yMin) * (this.yMax - this.yMin)))
         this.camera.position.set((this.xMax + this.xMin) / 2,
             (this.yMax + this.yMin) / 2,
@@ -131,8 +129,7 @@ class GameEngine {
         this.camera.lookAt((this.xMax + this.xMin) / 2, (this.yMax + this.yMin) / 2, 0)
         this.camera.up = new THREE.Vector3(0, 1, 0)
         this.camera.fov = this.fov
-        
-        console.log(diag,this.fov,diag / Math.tan(this.fov * Math.PI / 180))
+        //console.log(diag, this.fov, diag / Math.tan(this.fov * Math.PI / 180))
         this.camera.updateProjectionMatrix()
     }
 
@@ -162,8 +159,8 @@ class GameEngine {
         var loader = new THREE.TextureLoader();
         loader.load('assets/floor.jpg',
             (floorTexture) => {
-                floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-                floorTexture.repeat.set(1, 3)
+                //floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+                floorTexture.repeat.set(1, 1)
                 var floorMaterial = new THREE.MeshPhongMaterial({ map: floorTexture, bumpMap: floorTexture, side: THREE.DoubleSide });
                 var floorGeometry = new THREE.BoxGeometry((this.xMax - this.xMin) * 3, 1, this.depth)
                 var floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -192,3 +189,99 @@ class GameEngine {
     }
 }
 
+class Puppet {
+    constructor() {
+
+        this.mesh=undefined
+        this.helper=undefined
+        this.initBones()
+    }
+
+    createGeometry(sizing) {
+        //BoxBufferGeometry(width : Float, height : Float, depth : Float, widthSegments : Integer, heightSegments : Integer, depthSegments : Integer)
+        //var geometry = new THREE.BoxBufferGeometry(10, 100, 10, 3, 3, 3)
+        var geometry = new THREE.CylinderGeometry(
+            5,                       // radiusTop
+            5,                       // radiusBottom
+            sizing.height,           // height
+            8,                       // radiusSegments
+            sizing.segmentCount * 3, // heightSegments
+            true                     // openEnded
+        );
+        
+        for (var i = 0; i < geometry.vertices.length; i++) {
+
+            var vertex = geometry.vertices[i];
+            var y = (vertex.y + sizing.halfHeight);
+
+            var skinIndex = Math.floor(y / sizing.segmentHeight);
+            var skinWeight = (y % sizing.segmentHeight) / sizing.segmentHeight;
+
+            geometry.skinIndices.push(new THREE.Vector4(skinIndex, skinIndex + 1, 0, 0));
+            geometry.skinWeights.push(new THREE.Vector4(1 - skinWeight, skinWeight, 0, 0));
+
+        }
+
+        return geometry;
+    }
+
+    initBones() {
+
+        var segmentHeight = 8
+        var segmentCount = 4
+        var height = segmentHeight * segmentCount
+        var halfHeight = height * 0.5
+
+        var sizing = {
+            segmentHeight: segmentHeight,
+            segmentCount: segmentCount,
+            height: height,
+            halfHeight: halfHeight
+        }
+
+        var geometry = this.createGeometry(sizing)
+        var bones = this.createBones(sizing)
+        this.mesh = this.createMesh(geometry, bones)
+        this.mesh.scale.multiplyScalar(1)
+
+    }
+    createBones(sizing) {
+
+        var bones = [];
+
+        var prevBone = new THREE.Bone()
+        bones.push(prevBone)
+        prevBone.position.y = - sizing.halfHeight
+
+        for (var i = 0; i < sizing.segmentCount; i++) {
+            var bone = new THREE.Bone()
+            bone.position.y = sizing.segmentHeight
+            bones.push(bone)
+            prevBone.add(bone)
+            prevBone = bone
+        }
+        return bones;
+    }
+
+    createMesh(geometry, bones) {
+
+        var material = new THREE.MeshPhongMaterial({
+            skinning: true,
+            color: 0x156289,
+            emissive: 0x072534,
+            side: THREE.DoubleSide,
+            flatShading: true
+        });
+
+        var mesh = new THREE.SkinnedMesh(geometry, material);
+        var skeleton = new THREE.Skeleton(bones)
+
+        mesh.add(bones[0])
+        mesh.bind(skeleton)
+        let skeletonHelper = new THREE.SkeletonHelper(mesh)
+        skeletonHelper.material.linewidth = 4
+        //scene.add(skeletonHelper)
+        this.helper=skeletonHelper
+        return mesh
+    }
+}
