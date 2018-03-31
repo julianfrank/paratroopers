@@ -207,7 +207,7 @@ class Puppet {
 
         this.x = new TinyTween({
             duration: 2,
-            value: { start: 0, end: 2 * Math.PI },
+            value: { start: 0.25 * Math.PI, end: 1.75 * Math.PI },
             rewind: true
         })
     }
