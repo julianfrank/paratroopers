@@ -43,7 +43,11 @@ class GameEngine {
         this.addSky()
         //Start the music
         this.renderer.animate(() => this.render())
+
+        this.actors = []
     }
+
+    addActor(actor) { return this.actors.push(actor) }
 
     onDocumentMouseMove(event) {
         event.preventDefault()
@@ -72,6 +76,10 @@ class GameEngine {
         this.renderer.render(this.scene, this.camera)
         this.stats.update()
         this.INTERSECTED = INTERSECTED
+
+        this.actors.map((val) => {
+            val.update()
+        })
     }
 
     initScene() {
@@ -100,9 +108,9 @@ class GameEngine {
         pLight.shadow.camera.near = 1
         pLight.shadow.camera.far = this.depth
         //this.scene.add(pLight)
-        var sphereSize = 111
-        var pointLightHelper = new THREE.PointLightHelper(pLight, sphereSize)
-        this.scene.add(pointLightHelper)
+        //var sphereSize = 111
+        //var pointLightHelper = new THREE.PointLightHelper(pLight, sphereSize)
+        //this.scene.add(pointLightHelper)
     }
 
     newFOV() {
@@ -196,6 +204,8 @@ class Puppet {
         this.helper = undefined
         this.bones = undefined
         this.initBones()
+
+        this.x = new TinyTween({duration:4})
     }
 
     createGeometry(sizing) {
@@ -285,14 +295,21 @@ class Puppet {
         this.helper = skeletonHelper
         return mesh
     }
+
+    update() {
+        if (this.x.finished) this.x.reset()
+        this.bones[3].rotation.z = this.x.tick()
+    }
 }
 /**
  * @name TinyTween
  * @version 31/Mar/2018
- * @param   {Number}    Duration in seconds. Default 19 seconds
- * @param   {JSON}      ValueRange Default {start:0,end:100}
  */
 class TinyTween {
+    /**
+     * @param   {Number}    Duration in seconds. Default 10 seconds
+     * @param   {JSON}      ValueRange Default {start:0,end:100}
+     */
     constructor(opts) {
         opts = opts || {}
         this.duration = opts.duration || 10//Duration of tween in SECONDS

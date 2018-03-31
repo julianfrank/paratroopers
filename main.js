@@ -9,6 +9,8 @@ window.onload = () => {
     p.mesh.position.set(800, 600, 100)
     g.scene.add(p.helper)
 
+    g.addActor(p)
+
     document.addEventListener("keydown", onDocumentKeyDown, false);
     function onDocumentKeyDown(event) {
         var keyCode = event.which
