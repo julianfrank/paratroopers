@@ -286,16 +286,38 @@ class Puppet {
         return mesh
     }
 }
-
+/**
+ * @name TinyTween
+ * @version 31/Mar/2018
+ * @param   {Number}    Duration in seconds. Default 19 seconds
+ * @param   {JSON}      ValueRange Default {start:0,end:100}
+ */
 class TinyTween {
     constructor(opts) {
         opts = opts || {}
-        this.start = opts.startTime || performance.now()//performance.now() from object creator.. Initiate from creator if trying to chain with other tweeners
         this.duration = opts.duration || 10//Duration of tween in SECONDS
-        this.end = this.start + this.duration * 1000
+        this.time = {
+            start: performance.now(),//performance.now() from object creator.. Initiate from creator if trying to chain with other tweeners
+            end: performance.now() + (this.duration * 1000)
+        }
         this.value = opts.value || { start: 0, end: 100 }
         this.valuegap = this.value.end - this.value.start
+        this.finished = false
+        this.position = this.value.start
     }
-    tick() { return this.value.start + (this.valuegap * Math.min((performance.now() - this.start) / (this.duration * 1000), 1)) }
-    reset() { this.start = performance.now() }
+    tick() {
+        if (!this.finished) {
+            this.position = this.value.start + (this.valuegap * (performance.now() - this.time.start) / (this.duration * 1000))
+            if (this.position > this.value.end) {
+                this.finished = true
+                this.position = this.value.end
+            }
+            return this.position
+        }
+        return this.position
+    }
+    reset() {
+        this.time.start = performance.now()
+        this.finished = false
+    }
 }
