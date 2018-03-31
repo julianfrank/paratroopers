@@ -206,9 +206,9 @@ class Puppet {
         this.initBones()
 
         this.x = new TinyTween({
-            duration: 2, value: {
-                start:0,end: 2 * Math.PI
-            }
+            duration: 2,
+            value: { start: 0, end: 2 * Math.PI },
+            rewind: true
         })
     }
 
@@ -301,7 +301,6 @@ class Puppet {
     }
 
     update() {
-        if (this.x.finished) this.x.reset()
         this.bones[3].rotation.z = this.x.tick()
     }
 }
@@ -311,17 +310,22 @@ class Puppet {
  */
 class TinyTween {
     /**
-     * @param   {Number}    Duration in seconds. Default 10 seconds
-     * @param   {JSON}      ValueRange Default {start:0,end:100}
+     * @param   {JSON}      opts {duration} in seconds. Default {duration:10} ,\n{value} Default {start:0,end:100},\n{rewind} default is {rewind:false}
      */
     constructor(opts) {
         opts = opts || {}
+        this.init(opts)
+    }
+    init(opts){
+        this.rewind = opts.rewind || false
         this.duration = opts.duration || 10//Duration of tween in SECONDS
+        this.value = opts.value || { start: 0, end: 100 }
+
         this.time = {
             start: performance.now(),//performance.now() from object creator.. Initiate from creator if trying to chain with other tweeners
             end: performance.now() + (this.duration * 1000)
         }
-        this.value = opts.value || { start: 0, end: 100 }
+        
         this.valuegap = this.value.end - this.value.start
         this.finished = false
         this.position = this.value.start
@@ -331,8 +335,19 @@ class TinyTween {
         if (!this.finished) {
             this.position = this.value.start + (this.valuegap * (performance.now() - this.time.start) / (this.duration * 1000))
             if (Math.abs(this.position - this.value.start) > Math.abs(this.valuegap)) {
-                this.finished = true
-                this.position = this.value.end
+                if (this.rewind) {
+                    this.init({
+                        duration:this.duration,
+                        value:{
+                            start:this.value.end,
+                            end:this.value.start
+                        },
+                        rewind:this.rewind
+                    })
+                } else {
+                    this.finished = true
+                    this.position = this.value.end
+                }
             }
             return this.position
         }
