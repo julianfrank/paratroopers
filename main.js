@@ -5,11 +5,11 @@ window.onload = () => {
 
     var p = new TryBones()
     g.scene.add(p.mesh)
-
     p.mesh.position.set(1000, 550, 2800)
     g.scene.add(p.helper)
-
     g.addActor(p)
+
+    let sm=new Stickman()
 
     document.addEventListener("keydown", onDocumentKeyDown, false);
     function onDocumentKeyDown(event) {

@@ -12,10 +12,10 @@ class GameEngine {
         this.background = opts.background || 0x888888
         this.anchorDiv = opts.anchorDiv || null
         //Init magic stuff
-        this.mouse = new THREE.Vector2()
+        //this.mouse = new THREE.Vector2()
         //Setup Raycaster to monitor mouse movement and events
-        this.raycaster = new THREE.Raycaster()
-        this.INTERSECTED
+        //this.raycaster = new THREE.Raycaster()
+        //this.INTERSECTED
         //Setup Stats box
         this.stats = new Stats()
 
@@ -35,11 +35,10 @@ class GameEngine {
             this.updateCameraByFOV()
         }, false)
         //Mouse move event Manager binding
-        document.addEventListener('mousemove', (ev) => {
-            this.onDocumentMouseMove(ev)
-        }, false)
+        //document.addEventListener('mousemove', (ev) => { this.onDocumentMouseMove(ev) }, false)
         //Add Environs
         this.addFloor()
+        this.sky
         this.addSky()
         //Start the music
         this.renderer.animate(() => this.render())
@@ -56,26 +55,9 @@ class GameEngine {
     }
 
     render() {
-        let INTERSECTED = this.INTERSECTED
-        // find intersections
-        this.raycaster.setFromCamera(this.mouse, this.camera)
-        let intersects = this.raycaster.intersectObjects(this.scene.children)
-        if (intersects.length > 0) {
-            if (INTERSECTED != intersects[0].object) {
-                if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
-                //console.log(INTERSECTED)
-                INTERSECTED = intersects[0].object
-                INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
-                INTERSECTED.material.color.setHex(0xffffff)
-                //console.log(INTERSECTED.position)
-            }
-        } else {
-            if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
-            INTERSECTED = null
-        }
+
         this.renderer.render(this.scene, this.camera)
         this.stats.update()
-        this.INTERSECTED = INTERSECTED
 
         this.actors.map((val) => {
             val.update()
@@ -92,14 +74,15 @@ class GameEngine {
 
     initLights() {
         //Ambient Light Setup
-        var alight = new THREE.AmbientLight(0x404040, 0.4)
-        this.scene.add(alight)
+        //var alight = new THREE.AmbientLight(0x404040, 0.4)
+        //this.scene.add(alight)
         //Hemisphere Light
-        var hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000, 1)
-        //hemiLight.position.set(0, 0, 1)
+        //HemisphereLight( skyColor : Integer, groundColor : Integer, intensity : Float )
+        var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)
+        hemiLight.position.set(0, 1, 0)
         this.scene.add(hemiLight)
         //PointLights
-        var pLight = new THREE.PointLight(0xffffff, 10, 1000)
+        /*var pLight = new THREE.PointLight(0xffffff, 10, 1000)
         pLight.position.set((this.xMax - this.xMin) / 2, (this.yMax - this.yMin) / 2, 50)
         pLight.castShadow = true
         //Set up shadow properties for the light
@@ -111,6 +94,7 @@ class GameEngine {
         //var sphereSize = 111
         //var pointLightHelper = new THREE.PointLightHelper(pLight, sphereSize)
         //this.scene.add(pointLightHelper)
+        */
     }
 
     newFOV() {
@@ -181,7 +165,7 @@ class GameEngine {
     }
 
     addSky() {
-        var loader = new THREE.TextureLoader();
+        /*var loader = new THREE.TextureLoader();
         loader.load('assets/skydome.jpg',
             (texture) => {
                 let backPlane = new THREE.Mesh(
@@ -193,13 +177,76 @@ class GameEngine {
                 this.scene.add(backPlane)
             }, undefined,
             (err) => console.error(err)
-        )
+        )*/
+
+        // Add Sky
+        var sky = new THREE.Sky();
+        sky.scale.setScalar(450000);
+        this.scene.add(sky);
+        // Add Sun Helper
+        var sunSphere = new THREE.Mesh(
+            new THREE.SphereBufferGeometry(20000, 16, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        sunSphere.position.y = - 700000
+        sunSphere.visible = false;
+        this.scene.add(sunSphere);
+        /// GUI
+        var effectController = {
+            turbidity: 10,
+            rayleigh: 2,
+            mieCoefficient: 0.05,
+            mieDirectionalG: 0.7,//0.8,
+            luminance: 0.5,
+            inclination: 0.5, // elevation / inclination
+            azimuth: 0.23, // Facing front,
+            sun: !true
+        };
+        var distance = 400000
+
+        var uniforms = sky.material.uniforms;
+        uniforms.turbidity.value = effectController.turbidity;
+        uniforms.rayleigh.value = effectController.rayleigh;
+        uniforms.luminance.value = effectController.luminance;
+        uniforms.mieCoefficient.value = effectController.mieCoefficient;
+        uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+        var theta = Math.PI * (effectController.inclination - 0.5);
+        var phi = 2 * Math.PI * (effectController.azimuth - 0.5);
+        sunSphere.position.x = distance * Math.cos(phi);
+        sunSphere.position.y = distance * Math.sin(phi) * Math.sin(theta);
+        sunSphere.position.z = distance * Math.sin(phi) * Math.cos(theta);
+        sunSphere.visible = effectController.sun;
+        uniforms.sunPosition.value.copy(sunSphere.position)
+    }
+}
+
+class Stickman {
+    constructor() {
+        // Create a simple "arm"
+
+        var bones = [];
+
+        var shoulder = new THREE.Bone();
+        var elbow = new THREE.Bone();
+        var hand = new THREE.Bone();
+
+        shoulder.add(elbow);
+        elbow.add(hand);
+
+        bones.push(shoulder);
+        bones.push(elbow);
+        bones.push(hand);
+
+        shoulder.position.y = -5;
+        elbow.position.y = 0;
+        hand.position.y = 5;
+
+        var armSkeleton = new THREE.Skeleton(bones)
     }
 }
 
 class TryBones {
     constructor() {
-
         this.mesh = undefined
         this.helper = undefined
         this.bones = undefined
@@ -282,7 +329,7 @@ class TryBones {
 
         var material = new THREE.MeshPhongMaterial({
             skinning: true,
-            wireframe:true,
+            wireframe: true,
             color: "white",
             emissive: 0x111111,
             side: THREE.DoubleSide,
@@ -319,7 +366,7 @@ class TinyTween {
         opts = opts || {}
         this.init(opts)
     }
-    init(opts){
+    init(opts) {
         this.rewind = opts.rewind || false
         this.duration = opts.duration || 10//Duration of tween in SECONDS
         this.value = opts.value || { start: 0, end: 100 }
@@ -328,7 +375,7 @@ class TinyTween {
             start: performance.now(),//performance.now() from object creator.. Initiate from creator if trying to chain with other tweeners
             end: performance.now() + (this.duration * 1000)
         }
-        
+
         this.valuegap = this.value.end - this.value.start
         this.finished = false
         this.position = this.value.start
@@ -340,12 +387,12 @@ class TinyTween {
             if (Math.abs(this.position - this.value.start) > Math.abs(this.valuegap)) {
                 if (this.rewind) {
                     this.init({
-                        duration:this.duration,
-                        value:{
-                            start:this.value.end,
-                            end:this.value.start
+                        duration: this.duration,
+                        value: {
+                            start: this.value.end,
+                            end: this.value.start
                         },
-                        rewind:this.rewind
+                        rewind: this.rewind
                     })
                 } else {
                     this.finished = true
