@@ -197,7 +197,7 @@ class GameEngine {
     }
 }
 
-class Puppet {
+class TryBones {
     constructor() {
 
         this.mesh = undefined
@@ -207,7 +207,7 @@ class Puppet {
 
         this.x = new TinyTween({
             duration: 2,
-            value: { start: 0.25 * Math.PI, end: 1.75 * Math.PI },
+            value: { start: -0.25 * Math.PI, end: 0.25 * Math.PI },
             rewind: true
         })
     }
@@ -216,11 +216,11 @@ class Puppet {
         //BoxBufferGeometry(width : Float, height : Float, depth : Float, widthSegments : Integer, heightSegments : Integer, depthSegments : Integer)
         //var geometry = new THREE.BoxBufferGeometry(10, 100, 10, 3, 3, 3)
         var geometry = new THREE.CylinderGeometry(
-            50,                       // radiusTop
-            50,                       // radiusBottom
+            5,                       // radiusTop
+            5,                       // radiusBottom
             sizing.height,           // height
-            8,                       // radiusSegments
-            sizing.segmentCount * 3, // heightSegments
+            7,                       // radiusSegments
+            sizing.segmentCount * 2, // heightSegments
             false                     // openEnded
         );
 
@@ -229,7 +229,7 @@ class Puppet {
             var vertex = geometry.vertices[i];
             var y = (vertex.y + sizing.halfHeight);
 
-            var skinIndex = Math.floor(y / sizing.segmentHeight);
+            var skinIndex = Math.floor(y / sizing.segmentHeight)
             var skinWeight = (y % sizing.segmentHeight) / sizing.segmentHeight;
 
             geometry.skinIndices.push(new THREE.Vector4(skinIndex, skinIndex + 1, 0, 0));
@@ -242,8 +242,8 @@ class Puppet {
 
     initBones() {
 
-        var segmentHeight = 80
-        var segmentCount = 8
+        var segmentHeight = 10
+        var segmentCount = 10
         var height = segmentHeight * segmentCount
         var halfHeight = height * 0.5
 
@@ -282,10 +282,11 @@ class Puppet {
 
         var material = new THREE.MeshPhongMaterial({
             skinning: true,
-            color: 0x156289,
-            emissive: 0x072534,
+            wireframe:true,
+            color: "white",
+            emissive: 0x111111,
             side: THREE.DoubleSide,
-            flatShading: true
+            flatShading: false
         });
 
         var mesh = new THREE.SkinnedMesh(geometry, material);
@@ -304,6 +305,8 @@ class Puppet {
         this.bones[3].rotation.z = this.x.tick()
     }
 }
+
+
 /**
  * @name TinyTween
  * @version 31/Mar/2018

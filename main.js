@@ -3,10 +3,10 @@ window.onload = () => {
     addRefObjects(g)
     addBunker(g)
 
-    var p = new Puppet()
+    var p = new TryBones()
     g.scene.add(p.mesh)
 
-    p.mesh.position.set(800, 600, 100)
+    p.mesh.position.set(1000, 550, 2800)
     g.scene.add(p.helper)
 
     g.addActor(p)
