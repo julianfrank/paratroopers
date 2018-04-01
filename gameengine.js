@@ -78,8 +78,8 @@ class GameEngine {
         //this.scene.add(alight)
         //Hemisphere Light
         //HemisphereLight( skyColor : Integer, groundColor : Integer, intensity : Float )
-        var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 1)
-        hemiLight.position.set(0, 1, 0)
+        var hemiLight = new THREE.HemisphereLight(0xffeeee, 0xffeeee, 2)
+        //hemiLight.position.set(0, -1, 0)
         this.scene.add(hemiLight)
         //PointLights
         /*var pLight = new THREE.PointLight(0xffffff, 10, 1000)
@@ -181,27 +181,26 @@ class GameEngine {
 
         // Add Sky
         var sky = new THREE.Sky();
-        sky.scale.setScalar(450000);
+        sky.scale.setScalar(45000);
         this.scene.add(sky);
         // Add Sun Helper
         var sunSphere = new THREE.Mesh(
             new THREE.SphereBufferGeometry(20000, 16, 8),
             new THREE.MeshBasicMaterial({ color: 0xffffff })
         );
-        sunSphere.position.y = - 700000
-        sunSphere.visible = false;
-        this.scene.add(sunSphere);
-        /// GUI
+        //sunSphere.position.y = - 700000
+        sunSphere.visible = true
+        this.scene.add(sunSphere)
         var effectController = {
             turbidity: 10,
             rayleigh: 2,
             mieCoefficient: 0.05,
             mieDirectionalG: 0.7,//0.8,
             luminance: 0.5,
-            inclination: 0.5, // elevation / inclination
+            inclination: 0.512, // elevation / inclination
             azimuth: 0.23, // Facing front,
             sun: !true
-        };
+        }
         var distance = 400000
 
         var uniforms = sky.material.uniforms;
@@ -241,7 +240,33 @@ class Stickman {
         elbow.position.y = 0;
         hand.position.y = 5;
 
-        var armSkeleton = new THREE.Skeleton(bones)
+        this.skeleton = new THREE.Skeleton(bones)
+        this.skeleton.calculateInverses()
+
+        var material = new THREE.MeshPhongMaterial({
+            skinning: true,
+            wireframe: true,
+            color: "green",
+            emissive: 0x111111,
+            side: THREE.DoubleSide,
+            flatShading: false
+        })
+
+        var geometry = new THREE.CylinderGeometry(
+            5,                       // radiusTop
+            5,                       // radiusBottom
+            100,           // height
+            7,                       // radiusSegments
+            10, // heightSegments
+            false                     // openEnded
+        );
+
+        this.mesh = new THREE.SkinnedMesh(geometry, material)
+        this.mesh.add(this.skeleton.bones[0])
+        this.mesh.bind(this.skeleton)
+
+        this.helper = new THREE.SkeletonHelper(this.mesh)
+        this.helper.material.linewidth = 3
     }
 }
 
@@ -334,7 +359,7 @@ class TryBones {
             emissive: 0x111111,
             side: THREE.DoubleSide,
             flatShading: false
-        });
+        })
 
         var mesh = new THREE.SkinnedMesh(geometry, material);
         var skeleton = new THREE.Skeleton(bones)
