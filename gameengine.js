@@ -1,3 +1,5 @@
+//Try https://davidwalsh.name/destructuring-function-arguments
+
 class GameEngine {
 
     constructor(opts) {
