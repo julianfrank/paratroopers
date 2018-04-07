@@ -1,15 +1,25 @@
 "use strict";
-var Student = /** @class */ (function () {
-    function Student(firstName, middleInitial, lastName) {
-        this.firstName = firstName;
-        this.middleInitial = middleInitial;
-        this.lastName = lastName;
-        this.fullName = firstName + " " + middleInitial + " " + lastName;
+/**
+ *
+ */
+var Animal = /** @class */ (function () {
+    /**
+     *
+     * @param theName
+     */
+    function Animal(theName) {
+        this.name = theName;
     }
-    return Student;
+    return Animal;
 }());
-function greeter(person) {
-    return "Hello, " + person.firstName + " " + person.lastName;
-}
-var user = new Student("Jane", "M.", "User");
-console.log(greeter(user));
+console.log(new Animal("Cat"));
+var Octopus = /** @class */ (function () {
+    function Octopus(theName) {
+        this.numberOfLegs = 8;
+        this.name = theName;
+    }
+    return Octopus;
+}());
+var dad = new Octopus("Man with the 8 strong legs");
+dad.name = "fdf";
+console.log(dad.name);

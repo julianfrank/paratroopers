@@ -1,19 +1,24 @@
-class Student {
-    fullName: string;
-    constructor(public firstName: string, public middleInitial: string, public lastName: string) {
-        this.fullName = firstName + " " + middleInitial + " " + lastName;
+/**
+ * 
+ */
+class Animal {
+    private name: string;
+    /**
+     * 
+     * @param theName 
+     */
+    constructor(theName: string) { this.name = theName; }
+}
+
+console.log(new Animal("Cat"))
+
+class Octopus {
+    readonly name: string;
+    readonly numberOfLegs: number = 8;
+    constructor (theName: string) {
+        this.name = theName;
     }
 }
-
-interface Person {
-    firstName: string;
-    lastName: string;
-}
-
-function greeter(person: Person) {
-    return "Hello, " + person.firstName + " " + person.lastName;
-}
-
-let user = new Student("Jane", "M.", "User");
-
-console.log(greeter(user))
+let dad = new Octopus("Man with the 8 strong legs");
+dad.name="fdf"
+console.log(dad.name)
