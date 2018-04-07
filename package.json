@@ -1,0 +1,20 @@
+{
+  "name": "paratroopers",
+  "version": "1.0.0",
+  "description": "Trying to recreate a I had made during my school days",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/julianfrank/paratroopers.git"
+  },
+  "author": "JF",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/julianfrank/paratroopers/issues"
+  },
+  "homepage": "https://github.com/julianfrank/paratroopers#readme",
+  "devDependencies": {}
+}
