@@ -277,7 +277,11 @@ class TryBones {
         this.mesh = undefined
         this.helper = undefined
         this.bones = undefined
+        this.world = undefined
+        this.sphereBody = undefined
+        this.timeStep = 1.0 / 60.0; // seconds
         this.initBones()
+        this.initPhysics()
 
         this.x = new TinyTween({
             duration: 2,
@@ -375,8 +379,33 @@ class TryBones {
         return mesh
     }
 
+    initPhysics() {
+        //Physics testing in progress
+        this.world = new CANNON.World();
+        this.world.gravity.set(0, -9.82, 0);
+        this.world.broadphase = new CANNON.NaiveBroadphase()
+
+        var mass = 5, radius = 10;
+        var sphereShape = new CANNON.Sphere(radius); // Step 1
+        this.sphereBody = new CANNON.Body({ mass: mass, shape: sphereShape }); // Step 2
+        this.sphereBody.position.set(this.bones[0].position.x, this.bones[0].position.y, this.bones[0].position.z);
+        this.sphereBody.angularVelocity.set(0,0,0);
+        this.world.add(this.sphereBody); // Step 3
+
+        var groundShape = new CANNON.Plane();
+        console.log(this.bones[0].quaternion,this.sphereBody)
+        var groundBody = new CANNON.Body({ mass: 0, shape: groundShape,quaternion:{x:this.bones[0].quaternion.x,y:this.bones[0].quaternion.y,z:this.bones[0].quaternion.z,w:this.bones[0].quaternion.w} });
+        groundBody.position.set(0, 0, 0)
+        this.world.add(groundBody);
+    }
+
     update() {
         this.bones[3].rotation.z = this.x.tick()
+        this.world.step(this.timeStep)
+        //console.log(this.sphereBody.position)
+        //this.bones[0].position.y = this.sphereBody.position.y
+        this.bones[0].position.copy(this.sphereBody.position)
+
     }
 }
 
