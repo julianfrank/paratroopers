@@ -1,7 +1,7 @@
+//import * as THREE from 'three';
+
 console.log("main")
 
-import {Scene} from 'three';
+const scene = new THREE.Scene();
 
-const scene = new Scene();
-
-console.log(scene)
+console.log(scene,"cool")
