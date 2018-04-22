@@ -21,5 +21,5 @@ var Octopus = /** @class */ (function () {
     return Octopus;
 }());
 var dad = new Octopus("Man with the 8 strong legs");
-dad.name = "fdf";
-console.log(dad.name);
+//dad.name="fdf"
+console.log(dad, dad.name);
