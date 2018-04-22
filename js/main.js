@@ -5,14 +5,14 @@ window.onload = () => {
 
     var p = new TryBones()
     g.scene.add(p.mesh)
-    p.mesh.position.set(1000, 550, 2800)
+    p.mesh.position.set(1000, 550, 280)
     g.scene.add(p.helper)
     g.addActor(p)
 
-    let sm=new Stickman()
+    let sm = new Stickman()
     g.scene.add(sm.mesh)
     console.log(sm.mesh)
-    sm.mesh.position.set(1000,550,2900)
+    sm.mesh.position.set(1000, 550, 2900)
     g.scene.add(sm.helper)
 
     document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -40,6 +40,9 @@ window.onload = () => {
                 break;
         }
     }
+
+
+
 }
 
 function addBunker(ge) {
