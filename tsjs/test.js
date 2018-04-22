@@ -2,24 +2,20 @@
 /**
  *
  */
-var Animal = /** @class */ (function () {
+class Animal {
     /**
      *
      * @param theName
      */
-    function Animal(theName) {
-        this.name = theName;
-    }
-    return Animal;
-}());
+    constructor(theName) { this.name = theName; }
+}
 console.log(new Animal("Cat"));
-var Octopus = /** @class */ (function () {
-    function Octopus(theName) {
+class Octopus {
+    constructor(theName) {
         this.numberOfLegs = 8;
         this.name = theName;
     }
-    return Octopus;
-}());
-var dad = new Octopus("Man with the 8 strong legs");
+}
+let dad = new Octopus("Man with the 8 strong legs");
 //dad.name="fdf"
 console.log(dad, dad.name);
