@@ -2,9 +2,8 @@
   "name": "paratroopers",
   "version": "1.0.0",
   "description": "Trying to recreate a I had made during my school days",
-  "main": "./tsjs/main.js",
   "scripts": {
-    "run": "tsc -w"
+    "run": "parcel index.html"
   },
   "repository": {
     "type": "git",
@@ -20,6 +19,7 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "^0.10.3",
     "@types/three": "^0.91.10",
     "three": "^0.92.0"
   }
