@@ -21,6 +21,6 @@
   "dependencies": {
     "@tensorflow/tfjs": "^0.10.3",
     "@types/three": "^0.91.10",
-    "three": "^0.92.0"
+    "three": "^0.125.0"
   }
 }
